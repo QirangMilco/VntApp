@@ -22,6 +22,21 @@ class VntBox {
     required this.networkConfig,
   });
   static Future<VntBox> create(NetworkConfig config, SendPort uiCall) async {
+    // 首先请求VPN权限（主要用于iOS平台）
+    if (Platform.isIOS) {
+      try {
+        debugPrint('在创建VPN连接前请求VPN权限');
+        final hasPermission = await VntAppCall.requestVpnPermission();
+        if (!hasPermission) {
+          debugPrint('未获得VPN权限，无法创建VPN连接');
+          throw Exception('VPN permission denied');
+        }
+      } catch (e) {
+        debugPrint('VPN权限请求失败: $e');
+        throw e;
+      }
+    }
+    
     var vntConfig = VntConfig(
         tap: false,
         token: config.token,
@@ -91,7 +106,8 @@ class VntBox {
 
   Future<void> close() async {
     vntApi.stop();
-    if (Platform.isAndroid) {
+    // 为iOS平台添加停止VPN逻辑
+    if (Platform.isAndroid || Platform.isIOS) {
       await VntAppCall.stopVpn();
     }
   }
@@ -225,7 +241,8 @@ class VntManager {
 typedef StartCallback = Future<void> Function();
 
 class VntAppCall {
-  static MethodChannel channel = const MethodChannel('top.wherewego.vnt/vpn');
+  // 使用新的MethodChannel名称以匹配iOS端设置
+  static MethodChannel channel = const MethodChannel('com.vntapp/vpn');
   static StartCallback startCall = () async {};
   static void setStartCall(StartCallback startCall) {
     VntAppCall.startCall = startCall;
@@ -253,20 +270,52 @@ class VntAppCall {
   }
 
   static Future<int> startVpn(RustDeviceConfig info, int mtu) async {
-    return await VntAppCall.channel
-        .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
+    try {
+      return await VntAppCall.channel
+          .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
+    } catch (e) {
+      debugPrint('启动VPN失败: $e');
+      throw e;
+    }
   }
 
   static Future<void> moveTaskToBack() async {
-    return await VntAppCall.channel.invokeMethod('moveTaskToBack');
+    if (Platform.isAndroid) {
+      return await VntAppCall.channel.invokeMethod('moveTaskToBack');
+    }
+    // iOS平台不需要此功能
   }
 
   static Future<bool> isTileStart() async {
-    return await VntAppCall.channel.invokeMethod('isTileStart');
+    if (Platform.isAndroid) {
+      return await VntAppCall.channel.invokeMethod('isTileStart');
+    }
+    // iOS平台返回默认值
+    return false;
   }
 
   static Future<void> stopVpn() async {
-    return await VntAppCall.channel.invokeMethod('stopVpn');
+    try {
+      return await VntAppCall.channel.invokeMethod('stopVpn');
+    } catch (e) {
+      debugPrint('停止VPN失败: $e');
+      throw e;
+    }
+  }
+
+  /// 请求VPN权限（主要用于iOS平台）
+  static Future<bool> requestVpnPermission() async {
+    try {
+      if (Platform.isIOS) {
+        debugPrint('请求VPN权限');
+        return await VntAppCall.channel.invokeMethod('requestVpnPermission');
+      }
+      // Android平台默认返回true
+      return true;
+    } catch (e) {
+      debugPrint('请求VPN权限失败: $e');
+      throw e;
+    }
   }
 
   static Map<String, dynamic> rustDeviceConfigToMap(

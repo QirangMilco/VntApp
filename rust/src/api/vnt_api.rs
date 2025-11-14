@@ -13,7 +13,7 @@ use vnt::cipher::CipherModel;
 use vnt::compression::Compressor;
 use vnt::core::{Config, Vnt};
 use vnt::handle::{CurrentDeviceInfo, PeerDeviceInfo};
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 use vnt::DeviceConfig;
 #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
 use vnt::DeviceInfo;
@@ -324,7 +324,7 @@ impl VntApiCallback {
         connect_fn: impl Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static,
         handshake_fn: impl Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
         register_fn: impl Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
-        // #[cfg(target_os = "android")]
+        #[cfg(any(target_os = "android", target_os = "ios"))]
         generate_tun_fn: impl Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static,
         peer_client_list_fn: impl Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()>
             + Send
@@ -340,6 +340,7 @@ impl VntApiCallback {
                 connect_fn: Box::new(connect_fn),
                 handshake_fn: Box::new(handshake_fn),
                 register_fn: Box::new(register_fn),
+                #[cfg(any(target_os = "android", target_os = "ios"))]
                 generate_tun_fn: Box::new(generate_tun_fn),
                 peer_client_list_fn: Box::new(peer_client_list_fn),
                 error_fn: Box::new(error_fn),
@@ -356,7 +357,7 @@ struct VntApiCallbackInner {
     connect_fn: Box<dyn Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static>,
     handshake_fn: Box<dyn Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
     register_fn: Box<dyn Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
-    // #[cfg(target_os = "android")]
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     generate_tun_fn: Box<dyn Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static>,
     peer_client_list_fn:
         Box<dyn Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()> + Send + Sync + 'static>,
@@ -437,7 +438,7 @@ impl VntCallback for VntApiCallback {
             Runtime::new().unwrap().block_on(async { f(info).await })
         }
     }
-    #[cfg(target_os = "android")]
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     fn generate_tun(&self, info: DeviceConfig) -> usize {
         let inner = self.inner.clone();
         let info = info.into();
@@ -579,7 +580,7 @@ pub struct RustDeviceConfig {
     pub external_route: Vec<(String, String)>,
 }
 
-#[cfg(target_os = "android")]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 impl From<DeviceConfig> for RustDeviceConfig {
     fn from(value: DeviceConfig) -> Self {
         Self {
