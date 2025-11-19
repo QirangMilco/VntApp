@@ -1088,6 +1088,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         // 创建VNT配置
         var vntConfig = VntConfig()
         
+        // 添加defer块，确保函数退出时(无论成功失败)都释放C字符串内存
+        defer {
+            freeVntConfigMemory(&vntConfig)
+        }
+        
         do {
             // 安全地分配和复制字符串
             vntConfig.token = try allocateAndCopyString(config["token"] as? String ?? "")
@@ -1139,8 +1144,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             recordError(errorMessage)
             logger.error(errorMessage)
             
-            // 清理已分配的内存
-            freeVntConfigMemory(&vntConfig)
+            // 不再需要在这里手动释放内存，defer会处理
             
             return false
         }
