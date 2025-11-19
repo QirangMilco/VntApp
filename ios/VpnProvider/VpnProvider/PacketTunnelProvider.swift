@@ -884,8 +884,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             logger.info("Configuring custom MTU: \(mtu)")
             settings.mtu = mtu
         } else {
-            logger.info("Using default MTU: 1500")
-            settings.mtu = NSNumber(value: 1500)
+            logger.info("Using default MTU: 1280")
+            settings.mtu = NSNumber(value: 1280)
         }
         
         logger.info("Network settings creation completed")
