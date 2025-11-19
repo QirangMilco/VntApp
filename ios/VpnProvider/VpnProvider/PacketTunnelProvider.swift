@@ -37,7 +37,6 @@ var currentPacketTunnelProvider: PacketTunnelProvider?
 class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private let logger = Logger(subsystem: "com.vntapp.VpnProvider", category: "PacketTunnelProvider")
-    private var packetFlow: NEPacketTunnelFlow?
     private var isRunning = false
     private var appGroupName = "group.com.vntapp.shared"
     private var vpnConfig: [String: Any]?
@@ -193,7 +192,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
                 return
             }
             
-            self.packetFlow = self.packetFlow
             self.isRunning = true
             self.logger.info("Tunnel started successfully")
             
@@ -913,7 +911,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         
         // 启动入站数据包处理线程
         Task {
-            await processInboundPackets(packetFlow: packetFlow)
+            await processInboundPackets(packetFlow: self.packetFlow)
         }
         
         // 启动出站数据包处理线程
