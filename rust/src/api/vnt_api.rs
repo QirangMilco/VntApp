@@ -55,7 +55,40 @@ pub fn init_log() {
             .with_tag("vnt_jni"), // logs will show under mytag tag
     );
 }
-#[cfg(not(target_os = "android"))]
+#[cfg(target_os = "ios")]
+pub fn init_log() {
+    // On iOS, log4rs config file doesn't exist. Use a simple env_logger that outputs to stderr.
+    // This ensures we can see Rust-side errors during debugging.
+    env_logger::Builder::from_default_env()
+        .filter_level(log::LevelFilter::Debug)
+        .format_timestamp_millis()
+        .init();
+
+    // Install a custom panic hook that writes crash info to App Group shared file
+    // so we can diagnose crashes even when the debugger doesn't attach.
+    std::panic::set_hook(Box::new(|info| {
+        let msg = if let Some(s) = info.payload().downcast_ref::<&str>() {
+            s.to_string()
+        } else if let Some(s) = info.payload().downcast_ref::<String>() {
+            s.clone()
+        } else {
+            "unknown panic payload".to_string()
+        };
+        let location = info.location().map(|l| format!("{}:{}", l.file(), l.line())).unwrap_or("unknown".to_string());
+        let crash_msg = format!("[RUST PANIC] at {}: {}\n", location, msg);
+        eprintln!("{}", crash_msg);
+
+        // Also write to App Group shared file
+        if let Ok(container) = std::env::var("APP_GROUP_PATH") {
+            let crash_path = std::path::PathBuf::from(container).join("rust_crash.log");
+            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&crash_path) {
+                let _ = std::io::Write::write_all(&mut f, crash_msg.as_bytes());
+            }
+        }
+    }));
+}
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub fn init_log() {
     let rs = log4rs::init_file("logs/log4rs.yaml", Default::default());
     println!("log  {:?}", rs);
@@ -154,6 +187,7 @@ impl VntApi {
             vnt_config.ports,
             vnt_config.first_latency,
             #[cfg(not(target_os = "android"))]
+            #[cfg(not(target_os = "ios"))]
             vnt_config.device_name,
             use_channel_type,
             vnt_config.packet_loss_rate,
@@ -324,7 +358,7 @@ impl VntApiCallback {
         connect_fn: impl Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static,
         handshake_fn: impl Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
         register_fn: impl Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
-        #[cfg(any(target_os = "android", target_os = "ios"))]
+        // #[cfg(target_os = "android")]
         generate_tun_fn: impl Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static,
         peer_client_list_fn: impl Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()>
             + Send
@@ -340,7 +374,6 @@ impl VntApiCallback {
                 connect_fn: Box::new(connect_fn),
                 handshake_fn: Box::new(handshake_fn),
                 register_fn: Box::new(register_fn),
-                #[cfg(any(target_os = "android", target_os = "ios"))]
                 generate_tun_fn: Box::new(generate_tun_fn),
                 peer_client_list_fn: Box::new(peer_client_list_fn),
                 error_fn: Box::new(error_fn),
@@ -357,7 +390,7 @@ struct VntApiCallbackInner {
     connect_fn: Box<dyn Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static>,
     handshake_fn: Box<dyn Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
     register_fn: Box<dyn Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    // #[cfg(target_os = "android")]
     generate_tun_fn: Box<dyn Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static>,
     peer_client_list_fn:
         Box<dyn Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()> + Send + Sync + 'static>,
@@ -374,7 +407,7 @@ impl VntCallback for VntApiCallback {
                 f().await
             });
         } else {
-            let f = &inner.success_fn;
+            let f = &self.inner.success_fn;
             Runtime::new().unwrap().block_on(async { f().await })
         }
     }

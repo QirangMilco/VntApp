@@ -50,6 +50,9 @@ Future<void> main() async {
   if (Platform.isAndroid) {
     VntAppCall.init();
   }
+  if (Platform.isIOS) {
+    VntAppCall.init();
+  }
 
   runApp(const VntApp());
 }
@@ -154,6 +157,105 @@ class _HomePageState extends State<HomePage> with WindowListener {
     }
 
     _loadData().then((v) async {
+      // On iOS, check if previous session crashed
+      if (Platform.isIOS) {
+        try {
+          final didCrash = await VntAppCall.checkCrashFlag();
+          debugPrint('iOS: Previous session crashed: $didCrash');
+          if (didCrash) {
+            final appLog = await VntAppCall.readAppLog();
+            debugPrint('iOS: ===== APP LOG FROM CRASHED SESSION =====');
+            debugPrint(appLog);
+            debugPrint('iOS: ===== END CRASH LOG =====');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('⚠️ 检测到上次异常退出，正在清理...', style: const TextStyle(fontSize: 14)),
+                  duration: const Duration(seconds: 3),
+                  action: SnackBarAction(
+                    label: '查看日志',
+                    onPressed: () async {
+                      final log = await VntAppCall.readAppLog();
+                      if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('崩溃日志'),
+                            content: SingleChildScrollView(child: Text(log, style: const TextStyle(fontSize: 10))),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              );
+            }
+            // Clear crash flag
+            await VntAppCall.clearCrashFlag();
+          }
+        } catch (e) {
+          debugPrint('iOS: Crash flag check error: $e');
+        }
+      }
+
+      // On iOS, clean up stale VPN connections left after app was killed.
+      // When the app is force-quit, the Rust pipe fds are broken but
+      // NEVPNConnection may still show "connected". We must stop it
+      // so the next connection attempt creates fresh pipes.
+      if (Platform.isIOS) {
+        try {
+          // Retry checkVpnStatus until tunnelManager is loaded
+          String vpnStatus = 'loading';
+          for (int i = 0; i < 15; i++) {
+            try {
+              vpnStatus = await VntAppCall.checkVpnStatus();
+            } catch (e) {
+              debugPrint('iOS: checkVpnStatus attempt ${i + 1} error: $e');
+              await Future.delayed(const Duration(milliseconds: 300));
+              continue;
+            }
+            if (vpnStatus != 'loading' && vpnStatus != 'invalid') break;
+            debugPrint('iOS: Waiting for VPN manager to load... ($vpnStatus, attempt ${i + 1})');
+            await Future.delayed(const Duration(milliseconds: 300));
+          }
+          debugPrint('iOS: VPN status after check: $vpnStatus');
+          if (vpnStatus == 'connected' || vpnStatus == 'connecting' || vpnStatus == 'reasserting') {
+            debugPrint('iOS: Detected stale VPN connection ($vpnStatus), stopping it...');
+            // Show a brief notification to the user
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('正在清理残留VPN连接...'), duration: Duration(seconds: 2)),
+              );
+            }
+            try {
+              final didStop = await VntAppCall.stopVpnIfConnected();
+              debugPrint('iOS: stopVpnIfConnected returned: $didStop');
+            } catch (e) {
+              debugPrint('iOS: stopVpnIfConnected error: $e');
+            }
+            // Wait for the system to fully disconnect
+            await Future.delayed(const Duration(milliseconds: 1000));
+            // Verify it actually disconnected
+            for (int i = 0; i < 10; i++) {
+              try {
+                final newStatus = await VntAppCall.checkVpnStatus();
+                debugPrint('iOS: Re-check status after stop: $newStatus (attempt ${i + 1})');
+                if (newStatus == 'disconnected') break;
+              } catch (e) {
+                debugPrint('iOS: re-check error: $e');
+              }
+              await Future.delayed(const Duration(milliseconds: 300));
+            }
+            debugPrint('iOS: Stale VPN cleanup complete');
+          }
+        } catch (e, stack) {
+          debugPrint('iOS: Failed to check/stop stale VPN: $e\n$stack');
+        }
+      }
+
       var isAuto = await _dataPersistence.loadAutoConnect() ?? false;
 
       if (!isAuto) {
@@ -309,9 +411,42 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> _connect(NetworkConfig config) async {
+    // On iOS, the Rust-side connection state can get out of sync with the
+    // NEVPNConnection system state. For example, after stopVpn the Extension
+    // is torn down but vntApi.isStopped() may still return false. Detect this
+    // mismatch and force-clean the stale VntBox so reconnection can proceed.
+    if (Platform.isIOS && vntManager.hasConnectionItem(config.itemKey)) {
+      try {
+        final vpnStatus = await VntAppCall.checkVpnStatus();
+        debugPrint('iOS: _connect detected cached VntBox, iOS VPN status=$vpnStatus');
+        if (vpnStatus == 'disconnected' || vpnStatus == 'invalid') {
+          debugPrint('iOS: VPN is $vpnStatus but Rust thinks connected — force cleaning stale VntBox');
+          _closeVnt(config.itemKey);
+        }
+      } catch (e) {
+        debugPrint('iOS: _connect checkVpnStatus error: $e');
+      }
+    }
+
     if (vntManager.hasConnectionItem(config.itemKey)) {
       connectDetailPage(config);
       return;
+    }
+    if (vntManager.hasConnection()) {
+      // On iOS, also check if the system VPN is actually running.
+      // If Rust thinks connected but iOS VPN is disconnected, clean up first.
+      if (Platform.isIOS) {
+        try {
+          final vpnStatus = await VntAppCall.checkVpnStatus();
+          debugPrint('iOS: _connect hasConnection=true, iOS VPN status=$vpnStatus');
+          if (vpnStatus == 'disconnected' || vpnStatus == 'invalid') {
+            debugPrint('iOS: VPN is $vpnStatus but Rust hasConnection — force removing all');
+            await vntManager.removeAll();
+          }
+        } catch (e) {
+          debugPrint('iOS: _connect checkVpnStatus error: $e');
+        }
+      }
     }
     if (vntManager.hasConnection()) {
       if (!vntManager.supportMultiple()) {
@@ -410,6 +545,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
   }
 
   Future<void> _connectVnt(NetworkConfig config) async {
+    debugPrint('_connectVnt: START for ${config.configName}');
     var onece = true;
     ReceivePort receivePort = ReceivePort();
     var itemKey = config.itemKey;
@@ -491,7 +627,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
       }
     });
     try {
+      debugPrint('_connectVnt: calling vntManager.create for ${config.configName}');
       await vntManager.create(config, receivePort.sendPort);
+      debugPrint('_connectVnt: vntManager.create returned for ${config.configName}');
     } catch (e) {
       debugPrint('dart catch e: $e');
       if (!mounted) return;
