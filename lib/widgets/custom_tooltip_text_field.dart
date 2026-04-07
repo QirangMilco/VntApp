@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:vnt_app/utils/responsive_utils.dart';
 
 class CustomTooltipTextField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
   final String tooltipMessage;
   final int maxLength;
+  final bool obscureText;
+  final Widget? suffixIcon;
   final String? Function(String?)? validator;
 
   const CustomTooltipTextField({
@@ -14,6 +17,8 @@ class CustomTooltipTextField extends StatefulWidget {
     required this.tooltipMessage,
     this.maxLength = 32,
     this.validator,
+    this.suffixIcon,
+    this.obscureText = false,
   });
 
   @override
@@ -54,15 +59,17 @@ class _CustomTooltipTextFieldState extends State<CustomTooltipTextField> {
         if (_showTooltip)
           Text(
             '${widget.labelText} ${widget.tooltipMessage}',
-            style: const TextStyle(color: Colors.black, fontSize: 13),
+            style: TextStyle(color: Colors.black, fontSize: context.fontSmall),
           ),
         TextFormField(
           controller: widget.controller,
           validator: widget.validator,
           focusNode: _focusNode,
+          obscureText: widget.obscureText,
           decoration: InputDecoration(
             labelText: !_showTooltip ? widget.labelText : null,
             errorText: _errorText,
+            suffixIcon: widget.suffixIcon,
           ),
           maxLength: widget.maxLength,
         ),

@@ -13,7 +13,7 @@ use vnt::cipher::CipherModel;
 use vnt::compression::Compressor;
 use vnt::core::{Config, Vnt};
 use vnt::handle::{CurrentDeviceInfo, PeerDeviceInfo};
-#[cfg(any(target_os = "android", target_os = "ios"))]
+#[cfg(target_os = "android")]
 use vnt::DeviceConfig;
 #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
 use vnt::DeviceInfo;
@@ -43,22 +43,63 @@ pub async fn vnt_init(vnt_config: VntConfig, call: VntApiCallback) -> anyhow::Re
 pub fn init_app() {
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
-    init_log();
 }
-#[cfg(target_os = "android")]
-pub fn init_log() {
-    use android_logger::Config;
+
+/// 初始化日志系统，支持所有平台
+/// log_dir: 日志目录路径，例如 "logs" 或 "/data/data/app/logs"
+#[flutter_rust_bridge::frb(sync)]
+pub fn init_log_with_path(log_dir: String) -> anyhow::Result<()> {
     use log::LevelFilter;
-    android_logger::init_once(
-        Config::default()
-            .with_max_level(LevelFilter::Debug) // limit log level
-            .with_tag("vnt_jni"), // logs will show under mytag tag
-    );
-}
-#[cfg(not(target_os = "android"))]
-pub fn init_log() {
-    let rs = log4rs::init_file("logs/log4rs.yaml", Default::default());
-    println!("log  {:?}", rs);
+    use log4rs::append::rolling_file::policy::compound::roll::fixed_window::FixedWindowRoller;
+    use log4rs::append::rolling_file::policy::compound::trigger::size::SizeTrigger;
+    use log4rs::append::rolling_file::policy::compound::CompoundPolicy;
+    use log4rs::append::rolling_file::RollingFileAppender;
+    use log4rs::config::{Appender, Config, Root};
+    use log4rs::encode::pattern::PatternEncoder;
+    use std::path::PathBuf;
+
+    // 确保日志目录存在
+    let log_path = PathBuf::from(&log_dir);
+    if !log_path.exists() {
+        std::fs::create_dir_all(&log_path)
+            .context(format!("创建日志目录失败: {}", log_dir))?;
+    }
+
+    // 日志文件路径
+    let log_file = log_path.join("vnt-core.log");
+
+    // 滚动策略：单个文件最大10MB
+    let trigger = SizeTrigger::new(10 * 1024 * 1024);
+
+    // 滚动文件命名模式：vnt-core.1.log, vnt-core.2.log, ..., vnt-core.5.log
+    let roller_pattern = log_path.join("vnt-core.{}.log").to_string_lossy().to_string();
+    let roller = FixedWindowRoller::builder()
+        .build(&roller_pattern, 5)
+        .context("创建日志滚动器失败")?;
+
+    // 组合策略
+    let policy = CompoundPolicy::new(Box::new(trigger), Box::new(roller));
+
+    // 日志编码格式
+    let encoder = PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S%.3f)} [{f}:{L}] {h({l})} {M}:{m}{n}{n}");
+
+    // 滚动文件追加器
+    let appender = RollingFileAppender::builder()
+        .encoder(Box::new(encoder))
+        .build(log_file, Box::new(policy))
+        .context("创建日志追加器失败")?;
+
+    // 构建日志配置
+    let config = Config::builder()
+        .appender(Appender::builder().build("rolling_file", Box::new(appender)))
+        .build(Root::builder().appender("rolling_file").build(LevelFilter::Info))
+        .context("构建日志配置失败")?;
+
+    // 初始化日志系统
+    log4rs::init_config(config).context("初始化日志系统失败")?;
+
+    log::info!("日志系统初始化成功，日志目录: {}", log_dir);
+    Ok(())
 }
 
 #[derive(Clone, Debug)]
@@ -324,7 +365,7 @@ impl VntApiCallback {
         connect_fn: impl Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static,
         handshake_fn: impl Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
         register_fn: impl Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static,
-        #[cfg(any(target_os = "android", target_os = "ios"))]
+        // #[cfg(target_os = "android")]
         generate_tun_fn: impl Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static,
         peer_client_list_fn: impl Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()>
             + Send
@@ -340,7 +381,6 @@ impl VntApiCallback {
                 connect_fn: Box::new(connect_fn),
                 handshake_fn: Box::new(handshake_fn),
                 register_fn: Box::new(register_fn),
-                #[cfg(any(target_os = "android", target_os = "ios"))]
                 generate_tun_fn: Box::new(generate_tun_fn),
                 peer_client_list_fn: Box::new(peer_client_list_fn),
                 error_fn: Box::new(error_fn),
@@ -357,7 +397,7 @@ struct VntApiCallbackInner {
     connect_fn: Box<dyn Fn(RustConnectInfo) -> DartFnFuture<()> + Send + Sync + 'static>,
     handshake_fn: Box<dyn Fn(RustHandshakeInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
     register_fn: Box<dyn Fn(RustRegisterInfo) -> DartFnFuture<bool> + Send + Sync + 'static>,
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    // #[cfg(target_os = "android")]
     generate_tun_fn: Box<dyn Fn(RustDeviceConfig) -> DartFnFuture<u32> + Send + Sync + 'static>,
     peer_client_list_fn:
         Box<dyn Fn(Vec<RustPeerClientInfo>) -> DartFnFuture<()> + Send + Sync + 'static>,
@@ -438,7 +478,7 @@ impl VntCallback for VntApiCallback {
             Runtime::new().unwrap().block_on(async { f(info).await })
         }
     }
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(target_os = "android")]
     fn generate_tun(&self, info: DeviceConfig) -> usize {
         let inner = self.inner.clone();
         let info = info.into();
@@ -580,7 +620,7 @@ pub struct RustDeviceConfig {
     pub external_route: Vec<(String, String)>,
 }
 
-#[cfg(any(target_os = "android", target_os = "ios"))]
+#[cfg(target_os = "android")]
 impl From<DeviceConfig> for RustDeviceConfig {
     fn from(value: DeviceConfig) -> Self {
         Self {

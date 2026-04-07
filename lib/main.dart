@@ -1,52 +1,147 @@
+import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
-import 'package:json2yaml/json2yaml.dart';
-import 'package:vnt_app/vnt/vnt_manager.dart';
-import 'connected_page.dart';
-import 'network_config_input_page.dart';
-import 'custom_app_bar.dart';
-import 'data_persistence.dart';
-import 'network_config.dart';
-import 'about_page.dart';
-import 'dart:async';
-import 'settings_page.dart';
-import 'src/rust/api/vnt_api.dart';
-import 'widgets/color_changing_button.dart';
-import 'package:vnt_app/src/rust/frb_generated.dart';
-import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:vnt_app/src/rust/frb_generated.dart';
+import 'package:vnt_app/src/rust/api/vnt_api.dart';
+import 'package:vnt_app/theme/app_theme.dart';
+import 'package:vnt_app/theme/theme_provider.dart';
+import 'package:vnt_app/pages/main_navigation_shell.dart';
+import 'package:vnt_app/data_persistence.dart';
+import 'package:vnt_app/vnt/vnt_manager.dart';
+import 'package:vnt_app/utils/responsive_utils.dart';
+import 'package:vnt_app/utils/log_utils.dart';
+import 'package:vnt_app/network_config.dart';
+import 'package:vnt_app/system_tray_manager.dart';
 
 final SystemTray systemTray = SystemTray();
 final AppWindow appWindow = AppWindow();
 
+/// 检测是否是 Windows 10 或更高版本
+bool isWindows10OrGreater() {
+  if (!Platform.isWindows) return false;
+
+  try {
+    final version = Platform.operatingSystemVersion;
+    // Windows 版本格式: "Microsoft Windows [Version 10.0.19045.5247]"
+    // Windows 7: 6.1, Windows 8: 6.2, Windows 8.1: 6.3, Windows 10: 10.0
+    final match = RegExp(r'(\d+)\.(\d+)').firstMatch(version);
+    if (match != null) {
+      final major = int.parse(match.group(1)!);
+      return major >= 10;
+    }
+  } catch (e) {
+    debugPrint('检测 Windows 版本失败: $e');
+  }
+
+  // 默认返回 true，使用自定义标题栏
+  return true;
+}
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 确保Flutter框架已初始化
+  // macOS 启动时先检查权限，在Flutter初始化之前
+  // 避免显示窗口后再提示输入密码
+  if (Platform.isMacOS) {
+    final needsRestart = await MacOSPrivilegeManager.checkAndRequestPrivilegeOnStartup();
+    if (needsRestart) {
+      // app 正在以管理员权限重新启动，当前进程将退出
+      return;
+    }
+  }
+
+  // 权限检查通过后，再初始化Flutter
+  WidgetsFlutterBinding.ensureInitialized();
+
   try {
     await copyLogConfig();
   } catch (e) {
     debugPrint('copyLogConfig catch $e');
   }
+
   try {
     await copyAppropriateDll();
   } catch (e) {
     debugPrint('copyAppropriateDll catch $e');
   }
-  await RustLib.init(); // 初始化Rust库
+
+  await RustLib.init();
+
+  // 初始化日志系统，所有平台统一使用log4rs
+  try {
+    // 使用统一的日志路径工具类获取日志目录
+    final logDir = await LogUtils.getLogDirectory();
+    debugPrint('日志目录: $logDir');
+
+    // 确保日志目录存在
+    final logsDirectory = Directory(logDir);
+    if (!await logsDirectory.exists()) {
+      await logsDirectory.create(recursive: true);
+      debugPrint('创建日志目录: $logDir');
+    }
+
+    // 调用Rust层初始化日志
+    initLogWithPath(logDir: logDir);
+    debugPrint('日志系统初始化成功，日志目录: $logDir');
+  } catch (e) {
+    debugPrint('初始化日志系统失败: $e');
+  }
+
   if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
     await windowManager.ensureInitialized();
 
-    final windowSize = await DataPersistence().loadWindowSize();
-    windowManager.setTitle('VNT app');
-    if (windowSize != null) {
-      await windowManager.setSize(windowSize);
-    }
+    // macOS 使用系统原生标题栏（保留所有原生窗口功能）
+    if (Platform.isMacOS) {
+      // macOS 专用配置 - 使用系统标题栏
+      WindowOptions windowOptions = const WindowOptions(
+        size: Size(1000, 700),
+        minimumSize: Size(800, 600),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.normal, // macOS 使用系统标题栏
+      );
 
-    windowManager.waitUntilReadyToShow().then((_) async {
-      await appWindow.show();
-    });
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        // 加载保存的窗口大小
+        final windowSize = await DataPersistence().loadWindowSize();
+        if (windowSize != null) {
+          await windowManager.setSize(windowSize);
+        }
+
+        // 设置窗口标题
+        await windowManager.setTitle('VNT App');
+
+        // macOS: 由于以root权限运行，隐藏最小化和最大化按钮，只保留关闭按钮
+        // 这是因为macOS安全限制导致这些按钮无法正常工作
+        await windowManager.setMinimizable(false);
+        await windowManager.setMaximizable(false);
+
+        // 显示窗口
+        await appWindow.show();
+      });
+    } else {
+      // Windows 和 Linux 保持原有逻辑
+      final windowSize = await DataPersistence().loadWindowSize();
+      windowManager.setTitle('VNT App');
+
+      // 只在 Windows 10+ 上使用自定义标题栏，Windows 7 使用系统标题栏
+      if (!Platform.isWindows || isWindows10OrGreater()) {
+        await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+      }
+
+      if (windowSize != null) {
+        await windowManager.setSize(windowSize);
+      }
+
+      windowManager.waitUntilReadyToShow().then((_) async {
+        await appWindow.show();
+      });
+    }
   }
+
   if (Platform.isAndroid) {
     VntAppCall.init();
   }
@@ -54,141 +149,208 @@ Future<void> main() async {
   runApp(const VntApp());
 }
 
-class VntApp extends StatelessWidget {
+class VntApp extends StatefulWidget {
   const VntApp({super.key});
 
   @override
+  State<VntApp> createState() => _VntAppState();
+}
+
+class _VntAppState extends State<VntApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+  Color _customThemeColor = AppTheme.primaryColor; // 默认主题色
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+    _loadCustomThemeColor();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final savedMode = await DataPersistence().loadThemeMode();
+    if (savedMode != null && mounted) {
+      setState(() {
+        _themeMode = savedMode;
+      });
+    }
+  }
+
+  Future<void> _loadCustomThemeColor() async {
+    final savedColor = await DataPersistence().loadCustomThemeColor();
+    if (savedColor != null && mounted) {
+      setState(() {
+        _customThemeColor = savedColor;
+      });
+    }
+  }
+
+  void _setThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+    DataPersistence().saveThemeMode(mode);
+  }
+
+  void _setCustomThemeColor(Color color) {
+    setState(() {
+      _customThemeColor = color;
+    });
+    DataPersistence().saveCustomThemeColor(color);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: '',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: PopScope(
+    return ThemeProvider(
+      themeMode: _themeMode,
+      setThemeMode: _setThemeMode,
+      customThemeColor: _customThemeColor,
+      setCustomThemeColor: _setCustomThemeColor,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'VNT App',
+        theme: AppTheme.createLightTheme(_customThemeColor),
+        darkTheme: AppTheme.createDarkTheme(_customThemeColor),
+        themeMode: _themeMode,
+        home: PopScope(
           canPop: false,
           onPopInvoked: (didPop) {
-            if (didPop) {
-              return;
+            if (didPop) return;
+            if (Platform.isAndroid) {
+              VntAppCall.moveTaskToBack();
             }
-            VntAppCall.moveTaskToBack();
           },
-          child: const HomePage()),
+          child: const MainApp(),
+        ),
+      ),
     );
   }
 }
 
-Future<void> initSystemTray() async {
-  String path =
-      Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
-
-  await systemTray.initSystemTray(
-    title: "VNT",
-    toolTip: "VNT",
-    iconPath: path,
-  );
-  final Menu menu = Menu();
-  menu.buildFrom([
-    MenuItemLabel(
-      label: '打开',
-      onClicked: (menuItem) {
-        appWindow.show();
-      },
-    ),
-    MenuItemLabel(
-      label: '隐藏',
-      onClicked: (menuItem) {
-        appWindow.hide();
-      },
-    ),
-    MenuItemLabel(
-      label: '退出',
-      onClicked: (menuItem) {
-        windowManager.setPreventClose(false);
-        appWindow.close();
-      },
-    ),
-  ]);
-  await systemTray.setContextMenu(menu);
-  systemTray.registerSystemTrayEventHandler((eventName) {
-    // debugPrint("eventName: $eventName");
-    if (eventName == kSystemTrayEventClick) {
-      Platform.isWindows ? windowManager.show() : systemTray.popUpContextMenu();
-    } else if (eventName == kSystemTrayEventRightClick) {
-      Platform.isWindows ? systemTray.popUpContextMenu() : windowManager.show();
-    }
-  });
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MainApp extends StatefulWidget {
+  const MainApp({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<MainApp> createState() => _MainAppState();
 }
 
-class _HomePageState extends State<HomePage> with WindowListener {
-  final DataPersistence _dataPersistence = DataPersistence();
-  _HomePageState() {
-    VntAppCall.setStartCall(() async {
-      await loadConnect();
-    });
-  }
-  // 所有网络配置
-  List<NetworkConfig> _configs = [];
-  bool _connected = vntManager.hasConnection();
+class _MainAppState extends State<MainApp> with WindowListener {
   bool rememberChoice = false;
 
   @override
   void initState() {
     super.initState();
+
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       initSystemTray();
-      DataPersistence().loadCloseApp().then((isClose) {
-        if (!(isClose ?? false)) {
-          windowManager.setPreventClose(true);
-        }
-      });
-
+      // macOS 和其他平台都需要设置 preventClose 来显示确认对话框
+      // Windows 和 Linux 根据用户设置决定是否阻止关闭
+      // macOS 始终阻止关闭以显示自定义确认对话框
+      if (Platform.isMacOS) {
+        windowManager.setPreventClose(true);
+      } else {
+        DataPersistence().loadCloseApp().then((isClose) {
+          if (!(isClose ?? false)) {
+            windowManager.setPreventClose(true);
+          }
+        });
+      }
       windowManager.addListener(this);
     }
 
-    _loadData().then((v) async {
-      var isAuto = await _dataPersistence.loadAutoConnect() ?? false;
+    // 设置Android启动回调
+    // 当从磁贴点击启动时，自动连接指定配置或默认配置
+    VntAppCall.setStartCall((String? configKey) async {
+      try {
+        final dataPersistence = DataPersistence();
 
-      if (!isAuto) {
-        if (!Platform.isAndroid || !await VntAppCall.isTileStart()) {
+        // 如果没有指定配置key，尝试从磁贴获取
+        String? targetKey = configKey;
+        if (targetKey == null || targetKey.isEmpty) {
+          // 检查是否从磁贴长按选择了配置
+          targetKey = await VntAppCall.getTileConfigKey();
+          debugPrint('从磁贴获取配置key: $targetKey');
+        }
+
+        // 如果还是没有，使用默认配置
+        if (targetKey == null || targetKey.isEmpty) {
+          targetKey = await dataPersistence.loadDefaultKey();
+          if (targetKey == null || targetKey.isEmpty) {
+            debugPrint('磁贴启动：未设置默认配置');
+            return;
+          }
+        }
+
+        final configs = await dataPersistence.loadData();
+        final config = configs.where((c) => c.itemKey == targetKey).firstOrNull;
+
+        if (config == null) {
+          debugPrint('磁贴启动：配置不存在 (key: $targetKey)');
           return;
         }
-      }
-      loadConnect();
-    });
-  }
 
-  void loadConnectState() {
-    setState(() {
-      _connected = vntManager.hasConnection();
-    });
-  }
-
-  Future<void> loadConnect() async {
-    if (_configs.isEmpty) {
-      return;
-    }
-
-    var connectItemKey = await _dataPersistence.loadDefaultKey();
-    var defaultConf = _configs[0];
-    if (connectItemKey != null && connectItemKey.isNotEmpty) {
-      for (var conf in _configs) {
-        if (conf.itemKey == connectItemKey) {
-          defaultConf = conf;
-          break;
+        // 如果当前已有连接，先断开所有连接
+        if (vntManager.hasConnection()) {
+          debugPrint('磁贴启动：检测到已有连接，先断开所有连接');
+          await vntManager.removeAll();
+          // 等待更长时间确保断开完成和VPN资源释放
+          await Future.delayed(const Duration(milliseconds: 1000));
+          debugPrint('磁贴启动：断开完成，准备连接新配置');
         }
-      }
-    }
-    debugPrint('defaultConf $defaultConf');
 
-    await _connect(defaultConf);
+        // 检查是否正在连接
+        if (vntManager.isConnecting()) {
+          debugPrint('磁贴启动：正在连接中，跳过');
+          return;
+        }
+
+        // 开始连接
+        debugPrint('磁贴启动：开始连接配置 [${config.configName}] (key: ${config.itemKey})');
+        final receivePort = ReceivePort();
+
+        receivePort.listen((msg) {
+          if (msg is String) {
+            if (msg == 'success') {
+              debugPrint('磁贴启动：连接成功');
+              // 连接成功，更新磁贴和小组件状态
+              VntAppCall.updateWidgetAndTile(true);
+              // 更新Windows托盘
+              if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+                SystemTrayManager().updateMenu();
+                SystemTrayManager().updateTooltip();
+              }
+            } else if (msg == 'stop') {
+              vntManager.remove(config.itemKey);
+              debugPrint('磁贴启动：连接失败或停止');
+              // 连接停止，更新磁贴和小组件状态
+              VntAppCall.updateWidgetAndTile(vntManager.hasConnection());
+              // 更新Windows托盘
+              if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+                SystemTrayManager().updateMenu();
+                SystemTrayManager().updateTooltip();
+              }
+            }
+          } else if (msg is RustErrorInfo) {
+            vntManager.remove(config.itemKey);
+            debugPrint('磁贴启动：连接错误 - ${msg.msg}');
+            // 连接错误，更新磁贴和小组件状态
+            VntAppCall.updateWidgetAndTile(vntManager.hasConnection());
+            // 更新Windows托盘
+            if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+              SystemTrayManager().updateMenu();
+              SystemTrayManager().updateTooltip();
+            }
+          }
+        });
+
+        await vntManager.create(config, receivePort.sendPort);
+        debugPrint('磁贴启动：VntBox��建完成，等待连接结果');
+      } catch (e) {
+        debugPrint('磁贴启动连接失败: $e');
+        // 连接异常，更新磁贴和小组件状态
+        VntAppCall.updateWidgetAndTile(vntManager.hasConnection());
+      }
+    });
   }
 
   @override
@@ -205,6 +367,20 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   @override
   void onWindowClose() async {
+    // macOS 显示特殊的确认对话框（说明由于安全限制无法最小化）
+    if (Platform.isMacOS) {
+      final shouldClose = await _showMacOSCloseConfirmationDialog();
+      if (shouldClose == true) {
+        // 退出应用：先断开连接再关闭
+        await vntManager.removeAll();
+        windowManager.setPreventClose(false);
+        appWindow.close();
+      }
+      // 如果用户点��取消，什么都不做（窗口保持打开）
+      return;
+    }
+
+    // Windows 和 Linux 保持原有的确认逻辑
     var isClose = await DataPersistence().loadCloseApp();
     if (isClose == null) {
       final shouldClose = await _showCloseConfirmationDialog();
@@ -212,26 +388,97 @@ class _HomePageState extends State<HomePage> with WindowListener {
     }
     if (isClose != null) {
       if (isClose) {
+        // 退出应用：先断开连接再关闭
+        await vntManager.removeAll();
         windowManager.setPreventClose(false);
         appWindow.close();
       } else {
+        // 隐藏窗口：不断开连接
         appWindow.hide();
       }
     }
   }
 
+  /// macOS 专用的关闭确认对话框
+  Future<bool?> _showMacOSCloseConfirmationDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            '确认退出',
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+            ),
+          ),
+          content: Text(
+            '由于 macOS 安全限制，应用无法最小化。\n\n你确认要退出程序吗？',
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                '取消',
+                style: TextStyle(
+                  fontSize: context.fontXSmall,
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.errorColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text('退出应用', style: TextStyle(fontSize: context.fontXSmall)),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result;
+  }
+
   Future<bool?> _showCloseConfirmationDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     final result = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: const Text('确认关闭'),
+              backgroundColor: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                '确认关闭',
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                ),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('你确定要关闭应用吗？'),
+                  Text(
+                    '你确定要关闭应用吗？',
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Checkbox(
@@ -241,24 +488,40 @@ class _HomePageState extends State<HomePage> with WindowListener {
                             rememberChoice = value ?? false;
                           });
                         },
+                        activeColor: primaryColor,
                       ),
-                      const Text('记住此操作', style: TextStyle(fontSize: 12)),
+                      Text(
+                        '记住此操作',
+                        style: TextStyle(
+                          fontSize: context.fontXSmall,
+                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
               actions: <Widget>[
                 TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('隐藏到托盘', style: TextStyle(fontSize: 12)),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    '隐藏到托盘',
+                    style: TextStyle(
+                      fontSize: context.fontXSmall,
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                    ),
+                  ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: const Text('关闭应用', style: TextStyle(fontSize: 12)),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.errorColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text('退出应用', style: TextStyle(fontSize: context.fontXSmall)),
                 ),
               ],
             );
@@ -273,501 +536,41 @@ class _HomePageState extends State<HomePage> with WindowListener {
     return result;
   }
 
-  Future<void> _loadData() async {
-    List<NetworkConfig> configs = await _dataPersistence.loadData();
-    setState(() {
-      _configs = configs;
-    });
-  }
-
-  void _addOrEditConfig(NetworkConfig? config, int index) async {
-    if (config != null) {
-      if (vntManager.hasConnectionItem(config.itemKey)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已连接的配置不能编辑')),
-        );
-        return;
-      }
-    }
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => NetworkConfigInputPage(config: config),
-      ),
-    );
-
-    if (result != null && result is NetworkConfig) {
-      setState(() {
-        if (index >= 0) {
-          _configs[index] = result;
-        } else {
-          _configs.add(result);
-        }
-      });
-      _dataPersistence.saveData(_configs);
-    }
-  }
-
-  Future<void> _connect(NetworkConfig config) async {
-    if (vntManager.hasConnectionItem(config.itemKey)) {
-      connectDetailPage(config);
-      return;
-    }
-    if (vntManager.hasConnection()) {
-      if (!vntManager.supportMultiple()) {
-        var lastConnectedConfig = vntManager.getOne()?.networkConfig;
-        // 不能重复连接
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('连接配置项[${lastConnectedConfig?.configName}]'),
-              content: const Text("已经建立了连接"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    if (lastConnectedConfig != null) {
-                      connectDetailPage(lastConnectedConfig);
-                    }
-                  },
-                  child: const Text('查看连接'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Icon(Icons.close),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        // 可以多开，但是要提醒
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('已经建立了${vntManager.size()}个连接，是否要继续组网'),
-              content: const Text("注意虚拟IP、虚拟网段、网卡名称均不能冲突"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    connectVntAndSetBackground(config);
-                  },
-                  child: const Text('组网'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Icon(Icons.close),
-                ),
-              ],
-            );
-          },
-        );
-      }
-
-      return;
-    }
-    await connectVntAndSetBackground(config);
-  }
-
-  Future<void> connectVntAndSetBackground(NetworkConfig config) async {
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min, // 使内容尽可能紧凑
-                children: <Widget>[
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 20), // 添加一些垂直间距
-                  ElevatedButton(
-                    onPressed: () {
-                      vntManager.remove(config.itemKey);
-                    },
-                    child: const Text('取消'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      debugPrint('connectVntAndSetBackground showDialog $e');
-    }
-
-    await _connectVnt(config);
-  }
-
-  Future<void> _connectVnt(NetworkConfig config) async {
-    var onece = true;
-    ReceivePort receivePort = ReceivePort();
-    var itemKey = config.itemKey;
-    var configName = config.configName;
-    receivePort.listen((msg) async {
-      if (msg is String) {
-        if (msg == 'success') {
-          if (onece) {
-            onece = false;
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            connectDetailPage(config);
-          }
-        } else if (msg == 'stop') {
-          _closeVnt(itemKey);
-          if (onece) {
-            onece = false;
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('VNT服务停止[$configName]')),
-          );
-        }
-      } else if (msg is RustErrorInfo) {
-        if (onece) {
-          //没成功就失败的，就断开不重试了
-          onece = false;
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          _closeVnt(itemKey);
-        }
-        switch (msg.code) {
-          case RustErrorType.tokenError:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('token错误[$configName]')),
-            );
-            break;
-          case RustErrorType.disconnect:
-            //断开连接
-            break;
-          case RustErrorType.addressExhausted:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('IP地址用尽[$configName]')),
-            );
-            break;
-          case RustErrorType.ipAlreadyExists:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('和其他设备的虚拟IP冲突[$configName]')),
-            );
-            break;
-          case RustErrorType.invalidIp:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('虚拟IP地址无效[$configName]')),
-            );
-            break;
-          case RustErrorType.localIpExists:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('虚拟IP地址和本地IP冲突[$configName]')),
-            );
-            break;
-          default:
-            _closeVnt(itemKey);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('未知错误 ${msg.msg} [$configName]')),
-            );
-        }
-      } else if (msg is RustConnectInfo) {
-        if (onece && msg.count > BigInt.from(60)) {
-          onece = false;
-          Navigator.of(context).pop();
-          _closeVnt(itemKey);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('连接超时 ${msg.address} [$configName]')),
-          );
-        }
-      }
-    });
-    try {
-      await vntManager.create(config, receivePort.sendPort);
-    } catch (e) {
-      debugPrint('dart catch e: $e');
-      if (!mounted) return;
-
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      var msg = e.toString();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-          '连接失败 $msg',
-          textAlign: TextAlign.left,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 6,
-        )),
-      );
-    }
-  }
-
-  void connectDetailPage(NetworkConfig config) async {
-    var vntBox = vntManager.get(config.itemKey);
-    if (vntBox == null) {
-      return;
-    }
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ConnectDetailPage(config: config, vntBox: vntBox),
-      ),
-    );
-    loadConnectState();
-  }
-
-  void _closeVnt(String itemKey) {
-    vntManager.remove(itemKey);
-    loadConnectState();
-  }
-
-  void _seeConnected() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('连接数[${vntManager.size()}]'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await vntManager.removeAll();
-                loadConnectState();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.red,
-              ),
-              child: const Text('全部断开'),
-            ),
-            // TextButton(
-            //   onPressed: () {
-            //     Navigator.of(context).pop();
-            //     if (connectedConfig != null) {
-            //       connectDetailPage(connectedConfig!);
-            //     }
-            //   },
-            //   child: const Text('查看连接'),
-            // ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _deleteConfig(int index) {
-    if (vntManager.hasConnectionItem(_configs[index].itemKey)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已连接的配置不能删除')),
-      );
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('是否删除配置[${_configs[index].configName}]'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _configs.removeAt(index);
-                });
-                _dataPersistence.saveData(_configs);
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.red,
-              ),
-              child: const Text('确认删除'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Icon(Icons.close),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _navigateToAboutPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AboutPage()),
-    );
-  }
-
-  _showConfigDialog(NetworkConfig config) {
-    var conf = json2yaml(config.toJsonSimple());
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('组网配置'),
-          content: SelectableText(conf),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Icon(Icons.close),
-            ),
-          ],
-        );
-      },
-    );
+  void _onThemeChanged() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Text(
-            vntManager.hasConnection() ? '已连接:${vntManager.size()}' : '',
-            style: const TextStyle(fontSize: 16, color: Colors.white)),
-        backgroundColor: Colors.teal,
-        actions: [
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Tooltip(
-                  message: '设置',
-                  child: IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.white),
-                    onPressed: () async {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => SettingsPage()),
-                      );
-                      _loadData();
-                    },
-                  ))),
-          if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
-            Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Tooltip(
-                    message: '隐藏到托盘',
-                    child: IconButton(
-                      icon: const Icon(Icons.push_pin_outlined,
-                          color: Colors.white),
-                      onPressed: () {
-                        appWindow.hide();
-                      },
-                    ))),
-          if (_connected)
-            Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Tooltip(
-                    message: 'VNT网络',
-                    child: ColorChangingButton(
-                      icon: Icons.attractions,
-                      colors: const [Colors.white, Colors.yellow],
-                      onPressed: _seeConnected,
-                    ))),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Tooltip(
-                  message: '关于VNT',
-                  child: IconButton(
-                    icon: const Icon(Icons.info, color: Colors.white),
-                    onPressed: _navigateToAboutPage,
-                  ))),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Tooltip(
-                  message: '添加配置',
-                  child: IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () => _addOrEditConfig(null, -1),
-                  ))),
-        ],
-      ),
-      body: _configs.isEmpty
-          ? const Center(
-              child: Text(
-                '点击右上角添加一个组网配置',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _configs.length,
-              itemBuilder: (context, index) {
-                var item = _configs[index];
-                var connected = vntManager.hasConnectionItem(item.itemKey);
-                return Container(
-                  color: index % 2 == 0 ? Colors.grey[200] : Colors.white,
-                  child: ListTile(
-                    title: InkWell(
-                        onTap: () {
-                          _showConfigDialog(_configs[index]);
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _configs[index].configName,
-                              textAlign: TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            Text(
-                              'IP:${_configs[index].virtualIPv4.isEmpty ? '自动分配' : _configs[index].virtualIPv4}',
-                              textAlign: TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            Text(
-                              _configs[index].deviceName,
-                              textAlign: TextAlign.left,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ],
-                        )),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.only(right: 3.0),
-                            child: Tooltip(
-                                message: connected ? '已连接' : '连接',
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.link,
-                                    color:
-                                        connected ? Colors.green : Colors.black,
-                                  ),
-                                  onPressed: () => _connect(_configs[index]),
-                                ))),
-                        Padding(
-                            padding: const EdgeInsets.only(right: 3.0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () =>
-                                  _addOrEditConfig(_configs[index], index),
-                            )),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteConfig(index),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
+    return MainNavigationShell(onThemeChanged: _onThemeChanged);
   }
+}
+
+Future<void> initSystemTray() async {
+  String path = Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+
+  // 初始化系统托盘
+  await systemTray.initSystemTray(
+    title: "VNT",
+    toolTip: "VNT - Virtual Network Tool",
+    iconPath: path,
+  );
+
+  // 初始化 SystemTrayManager，传入全局的 systemTray 实例
+  final trayManager = SystemTrayManager();
+  trayManager.initialize(systemTray);
+
+  // 更新菜单
+  await trayManager.updateMenu();
+
+  // 注册事件处理器
+  systemTray.registerSystemTrayEventHandler((eventName) {
+    if (eventName == kSystemTrayEventClick) {
+      Platform.isWindows ? windowManager.show() : systemTray.popUpContextMenu();
+    } else if (eventName == kSystemTrayEventRightClick) {
+      Platform.isWindows ? systemTray.popUpContextMenu() : windowManager.show();
+    }
+  });
 }
 
 String getArchitecture() {
@@ -778,9 +581,7 @@ String getArchitecture() {
 }
 
 Future<void> copyAppropriateDll() async {
-  if (!Platform.isWindows) {
-    return;
-  }
+  if (!Platform.isWindows) return;
 
   final arch = getArchitecture();
   String dllPath;
@@ -808,7 +609,6 @@ Future<void> copyAppropriateDll() async {
 
   final dllFile = File('wintun.dll');
   final sourceFile = File(dllPath);
-  // 将 DLL 文件复制到目标位置
   await sourceFile.copy(dllFile.path);
 }
 

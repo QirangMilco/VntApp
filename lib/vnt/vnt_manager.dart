@@ -10,6 +10,117 @@ import 'package:vnt_app/network_config.dart';
 import 'package:vnt_app/src/rust/api/vnt_api.dart';
 import 'package:vnt_app/utils/ip_utils.dart';
 
+/// macOS 权限管理器
+class MacOSPrivilegeManager {
+  /// 检查当前进程是否有 root 权限
+  static Future<bool> hasRootPrivilege() async {
+    if (!Platform.isMacOS) return true;
+
+    try {
+      // 尝试执行一个需要 root 权限���命令来检测
+      final result = await Process.run('id', ['-u']);
+      final uid = int.tryParse(result.stdout.toString().trim()) ?? -1;
+      return uid == 0; // uid 0 表示 root
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 使用 osascript 以管理员权限重新启动 app
+  /// [showPrompt] 是否显示友好的提示信息
+  static Future<bool> restartWithPrivilege({bool showPrompt = false}) async {
+    if (!Platform.isMacOS) return false;
+
+    try {
+      // 获取当前 app 的路径
+      final executablePath = Platform.resolvedExecutable;
+      // 获取 .app bundle 的路径
+      // 例如：/Applications/vnt_app.app/Contents/MacOS/vnt_app
+      // 需要提取到：/Applications/vnt_app.app
+      final appBundlePath = _getAppBundlePath(executablePath);
+
+      if (appBundlePath == null) {
+        return false;
+      }
+
+
+      // 构建 AppleScript 脚本
+      // 如果需要显示提示，添加友好的提示信息
+      String script;
+      if (showPrompt) {
+        script = '''
+tell application "System Events"
+    display dialog "VNT 需要管理员权限来创建虚拟网络设备。\\n\\n授权后将自动重启应用。" buttons {"取消", "授权"} default button "授权" with icon caution
+    if button returned of result is "授权" then
+        do shell script "\\"$executablePath\\" > /dev/null 2>&1 &" with administrator privileges
+    end if
+end tell
+''';
+      } else {
+        // 直接请求权限，不显示额外提示
+        script = 'do shell script "\\"$executablePath\\" > /dev/null 2>&1 &" with administrator privileges';
+      }
+
+      final result = await Process.run('osascript', ['-e', script]);
+
+      if (result.exitCode == 0) {
+        // 延迟退出当前 app，给新 app 启动的时间
+        Future.delayed(const Duration(milliseconds: 500), () {
+          exit(0);
+        });
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 从可执行文件路径提取 .app bundle 路径
+  static String? _getAppBundlePath(String executablePath) {
+    // 例如：/Applications/vnt_app.app/Contents/MacOS/vnt_app
+    // 需要提取：/Applications/vnt_app.app
+
+    final contentsIndex = executablePath.indexOf('/Contents/MacOS/');
+    if (contentsIndex == -1) {
+      return null;
+    }
+
+    return executablePath.substring(0, contentsIndex) + '.app';
+  }
+
+  /// 启动时检查并请求权限（用于 app 启动时调用）
+  /// 返回 true 表示需要重启（已经开始重启流程）
+  /// 返回 false 表示不需要重启（已有权限或不是 macOS）
+  static Future<bool> checkAndRequestPrivilegeOnStartup() async {
+    if (!Platform.isMacOS) return false;
+
+    final hasPrivilege = await hasRootPrivilege();
+    if (hasPrivilege) {
+      return false;
+    }
+
+    // 启动时直接请求权限，不显示额外提示（系统会显示标准的密码框）
+    return await restartWithPrivilege(showPrompt: false);
+  }
+
+  /// 连接时检查权限（用于连接 VPN 时调用，作为兜底检查）
+  /// 返回 true 表示需要重启（已经开始重启流程）
+  /// 返回 false 表示不需要重启（已有权限或不是 macOS）
+  static Future<bool> checkAndRequestPrivilege() async {
+    if (!Platform.isMacOS) return false;
+
+    final hasPrivilege = await hasRootPrivilege();
+    if (hasPrivilege) {
+      print('✓ 已有管理员权限');
+      return false;
+    }
+
+    return await restartWithPrivilege(showPrompt: false);
+  }
+}
+
 final VntManager vntManager = VntManager();
 
 class VntBox {
@@ -22,21 +133,6 @@ class VntBox {
     required this.networkConfig,
   });
   static Future<VntBox> create(NetworkConfig config, SendPort uiCall) async {
-    // 首先请求VPN权限（主要用于iOS平台）
-    if (Platform.isIOS) {
-      try {
-        debugPrint('在创建VPN连接前请求VPN权限');
-        final hasPermission = await VntAppCall.requestVpnPermission();
-        if (!hasPermission) {
-          debugPrint('未获得VPN权限，无法创建VPN连接');
-          throw Exception('VPN permission denied');
-        }
-      } catch (e) {
-        debugPrint('VPN权限请求失败: $e');
-        throw e;
-      }
-    }
-    
     var vntConfig = VntConfig(
         tap: false,
         token: config.token,
@@ -106,8 +202,7 @@ class VntBox {
 
   Future<void> close() async {
     vntApi.stop();
-    // 为iOS平台添加停止VPN逻辑
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isAndroid) {
       await VntAppCall.stopVpn();
     }
   }
@@ -167,6 +262,29 @@ class VntBox {
 class VntManager {
   HashMap<String, VntBox> map = HashMap();
   bool connecting = false;
+  // 记录主动断开连接的配置key，避免显示"服务已停止"提示
+  final Set<String> _manualDisconnecting = {};
+
+  // 判断设备是否在线 - 不区分大小写，去掉空格和换行
+  bool _isDeviceOnline(String status) {
+    return status.trim().toLowerCase() == 'online';
+  }
+
+  /// 标记为主动断开连接
+  void markManualDisconnect(String key) {
+    _manualDisconnecting.add(key);
+  }
+
+  /// 检查是否为主动断开连接
+  bool isManualDisconnect(String key) {
+    return _manualDisconnecting.contains(key);
+  }
+
+  /// 清除主动断开标记
+  void clearManualDisconnect(String key) {
+    _manualDisconnecting.remove(key);
+  }
+
   Future<VntBox> create(NetworkConfig config, SendPort uiCall) async {
     var key = config.itemKey;
     if (map.containsKey(key)) {
@@ -174,6 +292,16 @@ class VntManager {
     }
     try {
       connecting = true;
+
+      // macOS 权限检查：如果没有权限，请求重新启动
+      if (Platform.isMacOS) {
+        final needsRestart = await MacOSPrivilegeManager.checkAndRequestPrivilege();
+        if (needsRestart) {
+          // 已经开始重启流程，抛出异常通知 UI
+          throw Exception('需要管理员权限，app 正在重新启动...');
+        }
+      }
+
       var vntBox = await VntBox.create(config, uiCall);
       map[key] = vntBox;
       return vntBox;
@@ -195,6 +323,10 @@ class VntManager {
     if (vnt != null) {
       await vnt.close();
     }
+    // 更新磁贴和小组件状态
+    if (Platform.isAndroid) {
+      VntAppCall.updateWidgetAndTile(hasConnection());
+    }
   }
 
   Future<void> removeAll() async {
@@ -202,6 +334,10 @@ class VntManager {
       await element.value.close();
     }
     map.clear();
+    // 更新磁贴和小组件状态
+    if (Platform.isAndroid) {
+      VntAppCall.updateWidgetAndTile(false);
+    }
   }
 
   bool hasConnectionItem(String key) {
@@ -238,12 +374,11 @@ class VntManager {
   }
 }
 
-typedef StartCallback = Future<void> Function();
+typedef StartCallback = Future<void> Function(String? configKey);
 
 class VntAppCall {
-  // 使用新的MethodChannel名称以匹配iOS端设置
-  static MethodChannel channel = const MethodChannel('com.vntapp/vpn');
-  static StartCallback startCall = () async {};
+  static MethodChannel channel = const MethodChannel('top.wherewego.vnt/vpn');
+  static StartCallback startCall = (String? configKey) async {};
   static void setStartCall(StartCallback startCall) {
     VntAppCall.startCall = startCall;
   }
@@ -255,11 +390,16 @@ class VntAppCall {
           await vntManager.removeAll();
           break;
         case 'startVnt':
-          await startCall();
+          // 获取可选的配置key参数
+          String? configKey = call.arguments as String?;
+          await startCall(configKey);
           return vntManager.hasConnection();
         case 'isRunning':
           debugPrint("isRunning ${vntManager.hasConnection()}");
           return vntManager.hasConnection();
+        case 'getDeviceInfo':
+          // 获取设备信息：在线数量、离线数量、配置名称
+          return _getDeviceInfo();
         default:
           throw PlatformException(
             code: 'Unimplemented',
@@ -269,52 +409,72 @@ class VntAppCall {
     });
   }
 
-  static Future<int> startVpn(RustDeviceConfig info, int mtu) async {
-    try {
-      return await VntAppCall.channel
-          .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
-    } catch (e) {
-      debugPrint('启动VPN失败: $e');
-      throw e;
+  /// 获取设备信息
+  static Map<String, dynamic> _getDeviceInfo() {
+    var vntBox = vntManager.getOne();
+    if (vntBox == null) {
+      return {
+        'isConnected': false,
+        'configName': '',
+        'onlineCount': 0,
+        'offlineCount': 0,
+      };
     }
+
+    var deviceList = vntBox.peerDeviceList();
+    int onlineCount = 0;
+    int offlineCount = 0;
+
+    for (var device in deviceList) {
+      if (vntManager._isDeviceOnline(device.status)) {
+        onlineCount++;
+      } else {
+        offlineCount++;
+      }
+    }
+
+    var networkConfig = vntBox.getNetConfig();
+    String configName = networkConfig?.configName ?? '未知配置';
+
+    return {
+      'isConnected': true,
+      'configName': configName,
+      'onlineCount': onlineCount,
+      'offlineCount': offlineCount,
+    };
+  }
+
+  static Future<int> startVpn(RustDeviceConfig info, int mtu) async {
+    return await VntAppCall.channel
+        .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
   }
 
   static Future<void> moveTaskToBack() async {
-    if (Platform.isAndroid) {
-      return await VntAppCall.channel.invokeMethod('moveTaskToBack');
-    }
-    // iOS平台不需要此功能
+    return await VntAppCall.channel.invokeMethod('moveTaskToBack');
   }
 
   static Future<bool> isTileStart() async {
-    if (Platform.isAndroid) {
-      return await VntAppCall.channel.invokeMethod('isTileStart');
-    }
-    // iOS平台返回默认值
-    return false;
+    return await VntAppCall.channel.invokeMethod('isTileStart');
+  }
+
+  static Future<String?> getTileConfigKey() async {
+    return await VntAppCall.channel.invokeMethod('getTileConfigKey');
   }
 
   static Future<void> stopVpn() async {
-    try {
-      return await VntAppCall.channel.invokeMethod('stopVpn');
-    } catch (e) {
-      debugPrint('停止VPN失败: $e');
-      throw e;
-    }
+    return await VntAppCall.channel.invokeMethod('stopVpn');
   }
 
-  /// 请求VPN权限（主要用于iOS平台）
-  static Future<bool> requestVpnPermission() async {
+  /// 更新磁贴和小组件状态
+  /// @param isConnected 是否已连接
+  static Future<void> updateWidgetAndTile(bool isConnected) async {
     try {
-      if (Platform.isIOS) {
-        debugPrint('请求VPN权限');
-        return await VntAppCall.channel.invokeMethod('requestVpnPermission');
-      }
-      // Android平台默认返回true
-      return true;
+      await VntAppCall.channel.invokeMethod('updateWidgetAndTile', {
+        'isConnected': isConnected,
+      });
+      debugPrint('已通知更新磁贴和小组件状态: isConnected=$isConnected');
     } catch (e) {
-      debugPrint('请求VPN权限失败: $e');
-      throw e;
+      debugPrint('更新磁贴和小组件状态失败: $e');
     }
   }
 

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'custom_app_bar.dart';
 import 'data_persistence.dart';
 import 'network_config.dart';
 import 'dart:io';
 import 'widgets/custom_tooltip_text_field.dart';
 import 'utils/ip_utils.dart';
+import 'utils/toast_utils.dart';
+import 'utils/responsive_utils.dart';
+import 'theme/app_theme.dart';
 
 class NetworkConfigInputPage extends StatefulWidget {
   final NetworkConfig? config;
@@ -38,11 +40,12 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
   final _simulatedPacketLossRateController = TextEditingController();
   final _simulatedLatencyController = TextEditingController();
 
-  String _isServerEncrypted = 'OPEN';
+  String _isServerEncrypted = 'CLOSE';
   bool _isPasswordVisible = false;
+  bool _isTokenVisible = false;
   String _communicationMethod = 'UDP';
   String _dataFingerprintVerification = 'CLOSE';
-  String _encryptionAlgorithm = 'aes_gcm';
+  String _encryptionAlgorithm = 'xor';
   String _routingMode = 'P2P';
   String _builtInIpProxy = 'OPEN';
   bool _isMoreParametersVisible = false;
@@ -235,9 +238,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
       );
       Navigator.pop(context, config);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('参数校验失败,请检查标红参数')),
-      );
+      showTopToast(context, '参数校验失败,请检查标红参数', isSuccess: false);
     }
   }
 
@@ -257,27 +258,46 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: CustomAppBar(
-        title: const Text('组网参数配置', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        title: Text(
+          '组网参数配置',
+          style: TextStyle(
+            color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                primaryColor.withOpacity(0.15),
+                primaryColor.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        iconTheme: IconThemeData(
+          color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+        ),
         actions: [
-          // if (widget.config == null)
-          //   Padding(
-          //       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //       child: Tooltip(
-          //           message: '导入',
-          //           child: IconButton(
-          //             icon:
-          //                 const Icon(Icons.call_received, color: Colors.white),
-          //             onPressed: _showImportConfigDialog,
-          //           ))),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Tooltip(
                   message: '保存',
                   child: IconButton(
-                    icon: const Icon(Icons.save, color: Colors.white),
+                    icon: Icon(
+                      Icons.save,
+                      color: primaryColor,
+                    ),
                     onPressed: _submitForm,
                   ))),
         ],
@@ -292,19 +312,30 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                 CustomTooltipTextField(
                   controller: _nameController,
                   labelText: '配置名称',
-                  tooltipMessage: '(方便区分不同配置项，可填任意字符)',
+                  tooltipMessage: '(方便在首页区分不同的组网配置选项，可填任意字符)',
                   maxLength: 10,
                 ),
                 const SizedBox(height: 20),
                 _buildSectionTitle('基本参数'),
                 CustomTooltipTextField(
                   controller: _groupNumberController,
-                  labelText: '组网编号',
-                  tooltipMessage: '(标识同一个虚拟网络)',
+                  labelText: '组网token',
+                  tooltipMessage: '(相同的token和服务器才能组建一个虚拟局域网)',
                   maxLength: 64,
+                  obscureText: !_isTokenVisible, // 控制是否隐藏文本
+                  suffixIcon: IconButton( // 可见性切换按钮
+                    icon: Icon(
+                      _isTokenVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isTokenVisible = !_isTokenVisible;
+                      });
+                    },
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return '请输入组网编号';
+                      return '请输入token';
                     }
                     return null;
                   },
@@ -341,7 +372,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                 CustomTooltipTextField(
                   controller: _serverAddressController,
                   labelText: '服务器地址',
-                  tooltipMessage: '(VNTS地址,udp和tcp模式可以使用txt:前缀启用TXT记录解析)',
+                  tooltipMessage: '(VNTS地址,udp和tcp模式使用txt:前缀启用TXT记录解析,使用http:前缀启用302重定向解析)',
                   maxLength: 64,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -389,24 +420,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                         return null;
                       }
                       return '域名格式错误';
-                    } else {
-                      final match = addressPortRegex.firstMatch(value);
-                      if (match != null) {
-                        final domainRegex = RegExp(r'^[a-zA-Z0-9.-]');
-                        if (!domainRegex.hasMatch(match.group(1)!)) {
-                          return '地址格式错误';
-                        }
-                        final port = int.tryParse(match.group(2)!);
-                        if (port != null && port >= 1 && port <= 65535) {
-                          return null;
-                        } else {
-                          return '端口错误';
-                        }
-                      } else if (_communicationMethod == 'UDP' ||
-                          _communicationMethod == 'TCP') {
-                        return '地址格式错误';
-                      }
-                    }
+                    } 
                     return null;
                   },
                 ),
@@ -470,25 +484,25 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                 _buildDynamicTooltipFields(
                   'in-ip',
                   _inIps,
-                  '示例：192.168.0.1/24,10.26.0.10',
+                  '例如想要通过10.26.0.10去访问对端192.168.0.*网段内其他设备则填：192.168.0.1/24,10.26.0.10',
                   34,
                   IpUtils.parseInIpString,
                 ),
                 _buildDynamicTooltipFields(
                   'out-ip',
                   _outIps,
-                  '示例：0.0.0.0/0',
+                  '本地网段，示例：0.0.0.0/0',
                   18,
                   IpUtils.parseOutIpString,
                 ),
                 _buildDynamicTooltipFields(
                   '端口映射',
                   _portMappings,
-                  '示例：tcp:0.0.0.0:80->10.26.0.10:80',
+                  '示例：tcp:0.0.0.0:80-10.26.0.10:80',
                   48,
                   (value) {
                     final regex =
-                        RegExp(r'^(tcp|udp):[^:]+:(\d{1,5})->[^:]+:(\d{1,5})$');
+                        RegExp(r'^(tcp|udp):[^:]+:(\d{1,5})-[^:]+:(\d{1,5})$');
                     final match = regex.firstMatch(value);
 
                     if (match != null) {
@@ -531,13 +545,13 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                 _buildDropdownField(
                   '加密算法',
                   [
-                    'aes_gcm',
+                    'xor',
                     'chacha20_poly1305',
                     'chacha20',
-                    'aes_cbc',
                     'aes_ecb',
+                    'aes_cbc',
                     'sm4_cbc',
-                    'xor'
+                    'aes_gcm'
                   ],
                   _encryptionAlgorithm,
                   (value) {
@@ -580,6 +594,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                         null,
                         false,
                       ),
+                      const SizedBox(height: 16),
                       CustomTooltipTextField(
                         controller: _localIPv4Controller,
                         labelText: '本地IPv4',
@@ -695,6 +710,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                         _addController,
                         _removeController,
                       ),
+                      const SizedBox(height: 16),
                       _buildTextFormField(
                         _simulatedPacketLossRateController,
                         '模拟丢包率',
@@ -708,6 +724,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                         },
                         TextInputType.numberWithOptions(decimal: true),
                       ),
+                      const SizedBox(height: 16),
                       _buildTextFormField(
                         _simulatedLatencyController,
                         '模拟延迟',
@@ -721,6 +738,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
                         },
                         TextInputType.number,
                       ),
+                      const SizedBox(height: 16),
                       _buildDynamicFields(
                         'stun服务器',
                         _stunServers,
@@ -774,7 +792,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      style: TextStyle(fontSize: context.fontMedium, fontWeight: FontWeight.bold),
     );
   }
 
@@ -784,15 +802,75 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
     String groupValue,
     ValueChanged<String?> onChanged,
   ) {
+    // 获取屏幕宽度，判断是否为竖屏或窄屏设备
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrowScreen = screenWidth < 600;
+
+    // 竖屏或窄屏设备使用Column布局，宽屏设备使用Row布局
+    if (isNarrowScreen) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.w500),
+                textAlign: TextAlign.left,
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                alignment: WrapAlignment.start,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                spacing: 4,
+                runSpacing: 4,
+                children: list.map(((String, String) x) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Radio<String>(
+                        value: x.$2,
+                        groupValue: groupValue,
+                        onChanged: onChanged,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      Flexible(
+                        child: Text(
+                          x.$1,
+                          style: TextStyle(fontSize: context.fontSmall),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 宽屏设备使用原有的Row布局
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title),
+        Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Text(title),
+        ),
         Expanded(
-          child: Row(
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 0,
             children: list.map(((String, String) x) {
               return Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 4),
                   Radio<String>(
                     value: x.$2,
                     groupValue: groupValue,
@@ -915,6 +993,7 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
     return DropdownButtonFormField(
       value: value,
       decoration: InputDecoration(labelText: labelText),
+      isExpanded: true, // 让下拉框内容自适应宽度，防止超出窗口
       items: items.map((String item) {
         return DropdownMenuItem(
           value: item,
@@ -934,43 +1013,97 @@ class _NetworkConfigInputPageState extends State<NetworkConfigInputPage> {
     ValueChanged<bool?> onChanged1,
     ValueChanged<bool?> onChanged2,
   ) {
+    // 获取屏幕宽度，判断是否为竖屏或窄屏设备
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrowScreen = screenWidth < 600;
+
     return FormField<bool>(
       builder: (state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(title),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Row(
+        return Padding(
+          padding: EdgeInsets.only(
+            top: isNarrowScreen ? 12.0 : 0,
+            bottom: isNarrowScreen ? 12.0 : 0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 竖屏或窄屏设备使用Column布局
+              if (isNarrowScreen) ...[
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.left,
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    alignment: WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.start,
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
-                      Checkbox(
-                        value: selectedValue1,
-                        onChanged: onChanged1,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: selectedValue1,
+                            onChanged: onChanged1,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          Text(valueName1, style: TextStyle(fontSize: context.fontSmall)),
+                        ],
                       ),
-                      Text(valueName1),
-                      const SizedBox(width: 10),
-                      Checkbox(
-                        value: selectedValue2,
-                        onChanged: onChanged2,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: selectedValue2,
+                            onChanged: onChanged2,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          Text(valueName2, style: TextStyle(fontSize: context.fontSmall)),
+                        ],
                       ),
-                      Text(valueName2),
                     ],
                   ),
                 ),
-              ],
-            ),
-            if (!selectedValue1 && !selectedValue2)
-              const Padding(
-                padding: EdgeInsets.only(top: 5.0),
-                child: Text(
-                  '至少勾选一个选项',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+              ] else ...[
+                // 宽屏设备使用Row布局
+                Row(
+                  children: [
+                    Text(title),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: selectedValue1,
+                            onChanged: onChanged1,
+                          ),
+                          Text(valueName1),
+                          const SizedBox(width: 10),
+                          Checkbox(
+                            value: selectedValue2,
+                            onChanged: onChanged2,
+                          ),
+                          Text(valueName2),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-          ],
+              ],
+              if (!selectedValue1 && !selectedValue2)
+                Padding(
+                  padding: const EdgeInsets.only(top: 5.0),
+                  child: Text(
+                    '至少勾选一个选项',
+                    style: TextStyle(color: Colors.red, fontSize: context.fontXSmall),
+                  ),
+                ),
+            ],
+          ),
         );
       },
       validator: (value) {
