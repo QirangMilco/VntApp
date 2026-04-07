@@ -4,7 +4,7 @@ class AppGroupManager {
     
     static let shared = AppGroupManager()
     
-    private let appGroupName = "group.com.vntapp.shared"
+    private let appGroupName = "group.xyz.QRTech.vntApp"
     private var userDefaults: UserDefaults?
     
     init() {
