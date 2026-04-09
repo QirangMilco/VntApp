@@ -1,0 +1,7 @@
+{
+  "compaction": {
+    "enabled": true
+  },
+  "defaultProvider": "custom-endpoint",
+  "defaultModel": "gpt-5.3-codex"
+}

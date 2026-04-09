@@ -384,29 +384,35 @@ impl<Call: VntCallback, Device: DeviceWrite> ServerPacketHandler<Call, Device> {
                                     let read_fd = (device_fd & 0xFFFF) as i32;
                                     let write_fd = ((device_fd >> 16) & 0xFFFF) as i32;
                                     if read_fd <= 0 || write_fd <= 0 {
-                                        self.callback.error(ErrorInfo::new_msg(
-                                            ErrorType::Unknown,
-                                            format!("invalid pipe fds: read={}, write={}", read_fd, write_fd),
-                                        ));
-                                    } else {
-                                        match tun::Device::new(read_fd, write_fd) {
-                                            Ok(device) => {
-                                                if let Err(e) =
-                                                    self.tun_device_helper.start(Arc::new(device), self.config_info.allow_wire_guard)
-                                                {
-                                                    self.callback.error(ErrorInfo::new_msg(
-                                                        ErrorType::Unknown,
-                                                        format!("{:?}", e),
-                                                    ));
-                                                }
-                                            }
-                                            Err(e) => {
-                                                self.callback.error(ErrorInfo::new_msg(
-                                                    ErrorType::Unknown,
-                                                    format!("{:?}", e),
-                                                ));
-                                            }
+                                        let msg = format!(
+                                            "invalid pipe fds: read={}, write={}",
+                                            read_fd, write_fd
+                                        );
+                                        self.callback
+                                            .error(ErrorInfo::new_msg(ErrorType::Unknown, msg.clone()));
+                                        return Err(anyhow!(msg));
+                                    }
+
+                                    let device = match tun::Device::new(read_fd, write_fd) {
+                                        Ok(device) => device,
+                                        Err(e) => {
+                                            let msg = format!("{:?}", e);
+                                            self.callback.error(ErrorInfo::new_msg(
+                                                ErrorType::Unknown,
+                                                msg.clone(),
+                                            ));
+                                            return Err(anyhow!(msg));
                                         }
+                                    };
+
+                                    if let Err(e) = self
+                                        .tun_device_helper
+                                        .start(Arc::new(device), self.config_info.allow_wire_guard)
+                                    {
+                                        let msg = format!("{:?}", e);
+                                        self.callback
+                                            .error(ErrorInfo::new_msg(ErrorType::Unknown, msg.clone()));
+                                        return Err(anyhow!(msg));
                                     }
                                 }
                                 #[cfg(target_os = "android")]

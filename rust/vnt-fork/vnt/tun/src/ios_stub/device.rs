@@ -3,6 +3,7 @@ use crate::Fd;
 use std::io;
 use std::net::Ipv4Addr;
 use std::os::fd::RawFd;
+use std::sync::atomic::{AtomicUsize, Ordering};
 #[cfg(target_os = "ios")]
 use libc;
 
@@ -16,6 +17,8 @@ use libc;
 ///   [4-byte BE total_length][4-byte BE protocol_family][IP packet data]
 ///   where total_length = 4 + IP_packet_length
 ///   protocol_family = AF_INET (2) or AF_INET6 (30)
+static IOS_PIPE_READ_ICMP_TRACE_COUNT: AtomicUsize = AtomicUsize::new(0);
+
 pub struct Device {
     /// Pipe fd we read from: Extension writes packets here
     read_fd: Fd,
@@ -118,6 +121,25 @@ impl IFace for Device {
             e
         })?;
 
+        if packet_len >= 20 {
+            let version = buf[0] >> 4;
+            let proto = buf[9];
+            if version == 4 && proto == 1 {
+                let idx = IOS_PIPE_READ_ICMP_TRACE_COUNT.fetch_add(1, Ordering::Relaxed);
+                if idx < 20 {
+                    let src = format!("{}.{}.{}.{}", buf[12], buf[13], buf[14], buf[15]);
+                    let dst = format!("{}.{}.{}.{}", buf[16], buf[17], buf[18], buf[19]);
+                    log::info!(
+                        "[iOS ICMP TRACE][ios-pipe-read#{}] src={} dst={} len={}",
+                        idx + 1,
+                        src,
+                        dst,
+                        packet_len
+                    );
+                }
+            }
+        }
+
         Ok(packet_len)
     }
 
@@ -130,6 +152,19 @@ impl IFace for Device {
         } else {
             libc::PF_INET as u32
         };
+        if protocol_family == libc::PF_INET as u32 && buf.len() >= 20 {
+            let proto = buf[9];
+            if proto == 1 {
+                let src = format!("{}.{}.{}.{}", buf[12], buf[13], buf[14], buf[15]);
+                let dst = format!("{}.{}.{}.{}", buf[16], buf[17], buf[18], buf[19]);
+                log::info!(
+                    "[iOS ICMP TRACE][ios-pipe-write] src={} dst={} len={}",
+                    src,
+                    dst,
+                    buf.len()
+                );
+            }
+        }
         let total_len = (4 + buf.len() as u32).to_be_bytes();
         fd_write_all(&self.write_fd, &total_len).map_err(|e| {
             log::error!("[iOS pipe] write total_length header failed: {}", e);

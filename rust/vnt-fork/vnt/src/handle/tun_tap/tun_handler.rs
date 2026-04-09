@@ -3,6 +3,7 @@ use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{io, thread};
 
 use packet::icmp::icmp::IcmpPacket;
@@ -28,6 +29,24 @@ use crate::protocol::body::ENCRYPTION_RESERVED;
 use crate::protocol::ip_turn_packet::BroadcastPacket;
 use crate::protocol::{ip_turn_packet, NetPacket, MAX_TTL};
 use crate::util::StopManager;
+
+static IOS_TUN_ICMP_TRACE_COUNT: AtomicUsize = AtomicUsize::new(0);
+
+fn trace_ios_tun_icmp(tag: &str, src: Ipv4Addr, dst: Ipv4Addr, kind: Option<Kind>, len: usize) {
+    let idx = IOS_TUN_ICMP_TRACE_COUNT.fetch_add(1, Ordering::Relaxed);
+    if idx < 20 {
+        log::info!(
+            "[iOS ICMP TRACE][{}#{}] src={} dst={} kind={:?} len={}",
+            tag,
+            idx + 1,
+            src,
+            dst,
+            kind,
+            len
+        );
+    }
+}
+
 fn icmp(device_writer: &Device, mut ipv4_packet: IpV4Packet<&mut [u8]>) -> anyhow::Result<()> {
     if ipv4_packet.protocol() == Protocol::Icmp {
         let mut icmp = IcmpPacket::new(ipv4_packet.payload_mut())?;
@@ -183,6 +202,12 @@ pub(crate) fn handle(
     let protocol = ipv4_packet.protocol();
     let src_ip = ipv4_packet.source_ip();
     let mut dest_ip = ipv4_packet.destination_ip();
+    if protocol == Protocol::Icmp {
+        let kind = IcmpPacket::new(ipv4_packet.payload())
+            .ok()
+            .map(|p| p.kind());
+        trace_ios_tun_icmp("tun-out", src_ip, dest_ip, kind, data_len.saturating_sub(12));
+    }
     let mut net_packet = NetPacket::new0(data_len, buf)?;
     let mut out = NetPacket::unchecked(extend);
     net_packet.set_default_version();
@@ -280,11 +305,35 @@ pub(crate) fn handle(
     }
 
     client_cipher.encrypt_ipv4(&mut net_packet)?;
-    context.send_ipv4_by_id(
-        &net_packet,
-        &dest_ip,
-        current_device.connect_server,
-        current_device.status.online(),
-    )?;
-    Ok(())
+    if protocol == Protocol::Icmp {
+        let send_rs = context.send_ipv4_by_id(
+            &net_packet,
+            &dest_ip,
+            current_device.connect_server,
+            current_device.status.online(),
+        );
+        match send_rs {
+            Ok(_) => {
+                trace_ios_tun_icmp("tun-send-ok", src_ip, dest_ip, None, data_len.saturating_sub(12));
+                Ok(())
+            }
+            Err(e) => {
+                log::warn!(
+                    "[iOS ICMP TRACE][tun-send-err] src={} dst={} err={}",
+                    src_ip,
+                    dest_ip,
+                    e
+                );
+                Err(e.into())
+            }
+        }
+    } else {
+        context.send_ipv4_by_id(
+            &net_packet,
+            &dest_ip,
+            current_device.connect_server,
+            current_device.status.online(),
+        )?;
+        Ok(())
+    }
 }

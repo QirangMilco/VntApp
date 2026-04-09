@@ -4,7 +4,7 @@ import NetworkExtension
 
 /// App-side file logger that writes to App Group shared container.
 /// This survives app crashes because the log is flushed immediately.
-private let appGroupIdentifier = "group.top.wherewego.vntApp"
+private let appGroupIdentifier = "group.io.mt64.v4"
 
 private func appLogURL() -> URL {
     let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)

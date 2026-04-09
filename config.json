@@ -1,0 +1,18 @@
+{
+  "id": "ws_24f00d5d",
+  "name": "VntApp-iOS",
+  "slug": "vntapp-ios",
+  "defaults": {
+    "permissionMode": "safe",
+    "cyclablePermissionModes": [
+      "safe",
+      "allow-all"
+    ],
+    "enabledSourceSlugs": []
+  },
+  "localMcpServers": {
+    "enabled": true
+  },
+  "createdAt": 1775479265251,
+  "updatedAt": 1775479265252
+}

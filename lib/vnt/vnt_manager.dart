@@ -88,7 +88,6 @@ class VntBox {
         return 0;
       } catch (e) {
         debugPrint('创建vpn异常 $e');
-        uiCall.send('stop');
         return 0;
       }
     }, peerClientListFn: (info) {

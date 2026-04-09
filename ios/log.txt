@@ -1,0 +1,2048 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+FlutterView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
+Failed to execute code (error: EXC_BAD_ACCESS, debugger assist: not detected)
+Dart execution mode: simulator
+[AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+[AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+[AppDelegate] Plugins registered
+[AppDelegate] Got FlutterViewController, setting up channel
+[VPNManager] loadTunnelManager called
+[AppDelegate] VPN monitoring started
+[AppDelegate] didFinishLaunchingWithOptions END
+[AppDelegate] super.application returned: true
+flutter: The Dart VM service is listening on http://127.0.0.1:49236/X4fVvpwGvno=/
+[VPNManager] VPN status changed: disconnected
+[VPNManager] Loaded existing tunnel manager: enabled=true, desc=VNT VPN
+[VPNManager] Protocol: providerBundle=io.mt63.v4.extension, server=VNT
+Reading from public effective user settings.
+flutter: iOS: Previous session crashed: true
+flutter: iOS: ===== APP LOG FROM CRASHED SESSION =====
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 17:12:07] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 17:12:25] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 17:12:25] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 17:12:25] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 17:15:03] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 17:15:04] [AppDelegate] startVpn success, fd=3407923
+flutter: [Apr 9, 2026 at 17:15:28] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 19:42:42] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 19:43:03] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 19:43:10] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 19:43:10] [AppDelegate] startVpn success, fd=3342386
+flutter: [Apr 9, 2026 at 19:43:32] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 19:43:50] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 19:43:52] [AppDelegate] stopVpn called
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 19:51:45] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 19:51:56] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 19:52:03] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 19:52:04] [AppDelegate] startVpn success, fd=3342386
+flutter: [Apr 9, 2026 at 19:52:21] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 19:52:31] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 19:52:32] [AppDelegate] stopVpn called
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 19:58:08] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 19:58:30] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 19:58:36] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 19:58:36] [AppDelegate] startVpn success, fd=3342386
+flutter: [Apr 9, 2026 at 19:58:48] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 19:59:00] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 19:59:01] [AppDelegate] stopVpn called
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 20:13:19] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 20:13:32] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 20:13:35] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 20:13:35] [AppDelegate] startVpn success, fd=3342386
+flutter: [Apr 9, 2026 at 20:14:07] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 20:14:22] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 20:14:24] [AppDelegate] stopVpn called
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 20:26:20] [AppDelegate] super.application returned: true
+flutter: [Apr 9, 2026 at 20:26:32] [AppDelegate] checkVpnStatus: disconnected
+flutter: [Apr 9, 2026 at 20:26:36] [AppDelegate] startVpn called
+flutter: [Apr 9, 2026 at 20:26:37] [AppDelegate] startVpn success, fd=3342386
+flutter: [Apr 9, 2026 at 20:26:55] [AppDelegate] applicationDidEnterBackground
+flutter: [Apr 9, 2026 at 20:27:22] [AppDelegate] applicationWillEnterForeground
+flutter: [Apr 9, 2026 at 20:27:23] [AppDelegate] stopVpn called
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] ========== didFinishLaunchingWithOptions START ==========
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] Set APP_GROUP_PATH=/private/var/mobile/Containers/Shared/AppGroup/374DBCED-4A03-4989-A2F4-91BD47771724
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] Plugins registered
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] Got FlutterViewController, setting up channel
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] VPN monitoring started
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] didFinishLaunchingWithOptions END
+flutter: [Apr 9, 2026 at 20:35:54] [AppDelegate] super.application returned: true
+flutter:
+flutter: iOS: ===== END CRASH LOG =====
+[VPNManager] getVpnStatusString: disconnected
+[AppDelegate] checkVpnStatus: disconnected
+flutter: iOS: VPN status after check: disconnected
+flutter: _connectVnt: START for n-net
+flutter: _connectVnt: calling vntManager.create for n-net
+[2026-04-09T12:36:12.928Z DEBUG rust_lib_vnt_app::api::vnt_api] vnt_init:VntConfig { tap: false, token: "n-net", device_id: "739f6bec-22dd-41a3-b067-c944cdc1152a", name: "aaa", server_address_str: "tcp://123.57.165.182:39872", name_servers: [], stun_server: ["stun.miwifi.com", "stun.chat.bilibili.com", "stun.hitv.com", "stun.cdnbye.com"], in_ips: [], out_ips: [], password: Some("qr-net"), mtu: Some(1410), ip: None, no_proxy: false, server_encrypt: true, cipher_model: "chacha20_poly1305", finger: false, punch_model: "all", ports: None, first_latency: false, device_name: None, use_channel_type: "all", packet_loss_rate: None, packet_delay: 0, port_mapping_list: [], compressor: "none", allow_wire_guard: false, local_ipv4: None }
+[2026-04-09T12:36:12.932Z DEBUG rust_lib_vnt_app::api::vnt_api] 解析参数:VntConfig { tap: false, token: "n-net", device_id: "739f6bec-22dd-41a3-b067-c944cdc1152a", name: "aaa", server_address_str: "tcp://123.57.165.182:39872", name_servers: [], stun_server: ["stun.miwifi.com", "stun.chat.bilibili.com", "stun.hitv.com", "stun.cdnbye.com"], in_ips: [], out_ips: [], password: Some("qr-net"), mtu: Some(1410), ip: None, no_proxy: false, server_encrypt: true, cipher_model: "chacha20_poly1305", finger: false, punch_model: "all", ports: None, first_latency: false, device_name: None, use_channel_type: "all", packet_loss_rate: None, packet_delay: 0, port_mapping_list: [], compressor: "none", allow_wire_guard: false, local_ipv4: None }
+[2026-04-09T12:36:12.936Z INFO  vnt::core::conn] config: Config { token: "n-net", device_id: "739f6bec-22dd-41a3-b067-c944cdc1152a", name: "aaa", server_address: 123.57.165.182:39872, server_address_str: "123.57.165.182:39872", name_servers: [], stun_server: ["stun.miwifi.com:3478", "stun.chat.bilibili.com:3478", "stun.hitv.com:3478", "stun.cdnbye.com:3478"], in_ips: [], out_ips: [], password: Some("qr-net"), mtu: Some(1410), protocol: TCP, ip: None, no_proxy: false, server_encrypt: true, cipher_model: Chacha20Poly1305, finger: false, punch_model: All, ports: None, first_latency: false, use_channel_type: All, packet_loss_rate: None, packet_delay: 0, port_mapping_list: [], compressor: None, enable_traffic: true, allow_wire_guard: false, local_ipv4: None }
+[2026-04-09T12:36:12.962Z INFO  vnt::handle::maintain::idle] domain 123.57.165.182:39872 dns [] addr [123.57.165.182:39872]
+[2026-04-09T12:36:12.963Z INFO  vnt::handle::maintain::idle] 发送握手请求,BaseConfigInfo { name: "aaa", token: "n-net", ip: None, client_secret_hash: Some([248, 126, 1, 82, 76, 58, 188, 143, 129, 52, 192, 39, 241, 38, 72, 103]), server_secret: true, device_id: "739f6bec-22dd-41a3-b067-c944cdc1152a", server_addr: "123.57.165.182:39872", name_servers: [], mtu: 1410, allow_wire_guard: false, default_interface: LocalInterface { index: 0, name: None } }
+[2026-04-09T12:36:12.964Z INFO  vnt::handle::handshaker] 发送握手请求,secret=true,123.57.165.182:39872
+[2026-04-09T12:36:12.964Z WARN  vnt::handle::maintain::idle] Kind(NotFound)
+[2026-04-09T12:36:13.011Z INFO  vnt::handle::recv_data::server] 握手响应:RouteKey { protocol: TCP, index: 0, addr: 123.57.165.182:39872 },version: "1.2.13" secret: true public_key: "0\202\001\"0\r\006\t*\206H\206\367\r\001\001\001\005\000\003\202\001\017\0000\202\001\n\002\202\001\001\000\310M\217\026\350\243\350\0245\363\330\322\356\235|\256yv\362\355\314d@f\267\007\002\324Zm\360\327g.\010\357z\363\220\333\3530O\270+\375\307\204\346\310a-\326W\3273+JK:\200\021\361h\371A)\274\360h&\372\372\306\311\366+\033R\336\343\205\315\214\311\326K\261\204\311GRS\266^\014\224p\023\255\304\340\033\245\007\323\212\370\300\251\332x\335\321\370\3204\331;\346\0164i.\'i\316\234\307Px\311\365L6\022\221{\324\254\225\037TW\000\227\\\216\276\204(s\020\344\201\205r\325\321\217\3738\252\272\310c\037\342\r\344}\220\014k~\371\363 \225\324\242\244d\253tB\025{\377\033R~dI\272M\220\241\032&I\264\261\206\256\331\302\270gsw\254\306@\002\213\224J\255W\272\313\335\014u\275\021\031\037\302\301\016\325\355$\345\303\323\"\346\273\235\344F\354\273\001\027XF\316\252<.\375\243\002\003\001\000\001" key_finger: "yzIFGKWHj6dRzj+Nw3XFbvutfrBXITl+qyPShAVuwyg="
+[2026-04-09T12:36:13.014Z INFO  vnt::handle::recv_data::server] 加密握手请求:HandshakeInfo { public_key: Some(RsaPublicKey { n: BigUint { data: [6360998754256879011, 13519212649706619159, 15415017668810580710, 8483956072640594190, 10685543658197605644, 7454433392172466827, 5311065052593898168, 7226511919394396710, 8377281879167685246, 17519167290965517483, 1001063074820226809, 18102406421418287074, 1217240209454125455, 42604489634752627, 10483206395336283223, 14362112020483683858, 1023558662270602908, 15983830125638138854, 563947179340323448, 10696070752058219429, 9568257302242680332, 16394736023077538737, 18070352613993042654, 17960682680394196730, 3119388406536335720, 16629648473563060019, 16947133050225805188, 7434889859488256219, 13188513144851263703, 8752450028991430758, 3887689303808900270, 14433349709347416084] }, e: BigUint { data: [65537] } }), finger: Some("yzIFGKWHj6dRzj+Nw3XFbvutfrBXITl+qyPShAVuwyg="), version: "1.2.13" }
+flutter: _connectVnt: vntManager.create returned for n-net
+[2026-04-09T12:36:13.046Z INFO  vnt::handle::recv_data::server] SecretHandshakeResponse
+[2026-04-09T12:36:13.046Z INFO  vnt::handle::recv_data::server] 发送注册请求，BaseConfigInfo { name: "aaa", token: "n-net", ip: None, client_secret_hash: Some([248, 126, 1, 82, 76, 58, 188, 143, 129, 52, 192, 39, 241, 38, 72, 103]), server_secret: true, device_id: "739f6bec-22dd-41a3-b067-c944cdc1152a", server_addr: "123.57.165.182:39872", name_servers: [], mtu: 1410, allow_wire_guard: false, default_interface: LocalInterface { index: 0, name: None } }
+[2026-04-09T12:36:13.061Z INFO  vnt::handle::recv_data::server] 注册成功：RegisterInfo { virtual_ip: 10.26.0.5, virtual_netmask: 255.255.255.0, virtual_gateway: 10.26.0.1 }
+[2026-04-09T12:36:13.071Z INFO  vnt::channel::punch] 端口变化=60.29.153.43:12963 index=0
+[2026-04-09T12:36:13.071Z INFO  vnt::channel::punch] ip变化=60.29.153.43,[60.29.153.43]
+flutter: iOS TUN: Starting VPN via Network Extension...
+flutter: iOS TUN: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1
+[AppDelegate] startVpn called
+[VPNManager] startVpn called
+Couldn't read values in CFPrefsPlistSource<0x111bd9c00> (Domain: group.io.mt64.v4, User: kCFPreferencesAnyUser, ByHost: Yes, Container: (null), Contents Need Refresh: Yes): Using kCFPreferencesAnyUser with a container is only allowed for System Containers, detaching from cfprefsd
+[VPNManager] Tunnel config saved to shared defaults
+[VPNManager] doStartVpn: managerReady=true, tunnelManager=exists
+[VPNManager] ✅ Manager reloaded, preparing VPN tunnel...
+[VPNManager] ✅ VPN startVPNTunnel called, waiting for tunnel ready...
+[VPNManager] VPN status changed: connecting
+[VPNManager] VPN status changed: connected
+[TunnelReadyPoller] Extension signaled tunnelReady, connecting to receive fd...
+[VPNManager] Connected to Extension socket, receiving fds...
+[VPNManager] Successfully received 2 pipe fds: readFd=50, writeFd=51
+[VPNManager] Encoded fd value: 3342386 (0x330032)
+[AppDelegate] startVpn success, fd=3342386
+flutter: iOS TUN: Got TUN fd=3342386 from Network Extension
+[2026-04-09T12:36:13.398Z INFO  tun::ios_stub::device] [iOS pipe] Device::new(read_fd=50, write_fd=51)
+[2026-04-09T12:36:13.602Z WARN  vnt::nat::stun] stun stun.miwifi.com:3478 error Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }
+[2026-04-09T12:36:14.025Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:true,ip:10.26.0.2,info:NatInfo { public_ips: [117.131.219.25, 60.29.153.34, 111.33.78.4], public_ports: [36289, 17337], public_port_range: 27082, nat_type: Symmetric, local_ipv4: Some(192.168.1.70), ipv6: None, udp_ports: [52263, 52264], tcp_port: 52263 }
+[2026-04-09T12:36:14.104Z WARN  vnt::nat::stun] stun stun.miwifi.com:3478 error Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }
+[2026-04-09T12:36:14.104Z WARN  vnt::nat::stun] stun stun.miwifi.com:3478 error Custom { kind: Other, error: "stun response err" }
+[2026-04-09T12:36:14.246Z INFO  vnt::nat::stun] stun stun.chat.bilibili.com:3478 mapped_addr {60.29.153.43:47776}  changed_addr None
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=1] =====
+flutter: [2026年4月9日 17:15:03] === startTunnel called ===
+flutter: [2026年4月9日 17:15:03] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 17:15:03] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 17:15:03] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 17:15:03] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 17:15:03] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 17:15:03] Network settings configured successfully
+flutter: [2026年4月9日 17:15:06] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:07] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:08] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:09] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:10] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:11] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:12] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:13] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:14] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:15] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:25] pipeToTunnel: injected 20 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:31] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 17:15:36] pipeToTunnel: injected 31 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 17:15:44] readPacketsLoop: forwarded 4 packets total (this batch: 1)
+flutter: [2026年4月9日 17:15:46] pipeToTunnel: injected 41 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 18:14:59] readPacketsLoop: forwarded 5 packets total (this batch: 1)
+flutter: [2026年4月9日 18:38:59] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 18:38:59] readPacketsLoop forwarded 5 total packets before stop
+flutter: [2026年4月9日 18:38:59] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 18:38:59] Packet tunnel stopped
+flutter: [2026年4月9日 19:43:10] === startTunnel called ===
+flutter: [2026年4月9日 19:43:10] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 19:43:10] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 19:43:10] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 19:43:10] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 19:43:10] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 19:43:10] Network settings configured successfully
+flutter: [2026年4月9日 19:43:13] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:14] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:15] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:16] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:17] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:18] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:19] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:20] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:21] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:22] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:32] pipeToTunnel: injected 20 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:43] pipeToTunnel: injected 31 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:43:44] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 19:43:52] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 19:43:52] readPacketsLoop forwarded 2 total packets before stop
+flutter: [2026年4月9日 19:43:52] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 19:43:52] Packet tunnel stopped
+flutter: [2026年4月9日 19:52:03] === startTunnel called ===
+flutter: [2026年4月9日 19:52:03] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 19:52:03] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 19:52:03] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 19:52:03] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 19:52:03] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 19:52:03] Network settings configured successfully
+flutter: [2026年4月9日 19:52:04] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:05] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:06] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:07] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:08] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:09] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:10] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:11] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:12] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:13] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:23] pipeToTunnel: injected 20 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:52:23] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 19:52:32] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 19:52:32] readPacketsLoop forwarded 2 total packets before stop
+flutter: [2026年4月9日 19:52:32] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 19:52:32] Packet tunnel stopped
+flutter: [2026年4月9日 19:58:36] === startTunnel called ===
+flutter: [2026年4月9日 19:58:36] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 19:58:36] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 19:58:36] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 19:58:36] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 19:58:36] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 19:58:36] Network settings configured successfully
+flutter: [2026年4月9日 19:58:38] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:39] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:40] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:41] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:42] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:43] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:44] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:45] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:46] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:47] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:58:51] readPacketsLoop: packet#1 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 19:58:51] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 19:58:54] readPacketsLoop: packet#2 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 19:58:57] pipeToTunnel: injected 20 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 19:59:01] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 19:59:01] readPacketsLoop forwarded 2 total packets before stop
+flutter: [2026年4月9日 19:59:01] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 19:59:01] Packet tunnel stopped
+flutter: [2026年4月9日 20:13:35] === startTunnel called ===
+flutter: [2026年4月9日 20:13:35] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 20:13:35] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 20:13:35] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 20:13:35] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 20:13:35] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 20:13:35] Network settings configured successfully
+flutter: [2026年4月9日 20:13:36] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:37] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:38] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:39] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:40] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:41] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:42] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:43] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:44] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:45] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:13:55] pipeToTunnel: injected 20 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:14:06] pipeToTunnel: injected 31 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:14:10] readPacketsLoop: packet#1 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:14:10] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 20:14:13] readPacketsLoop: packet#2 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:14:16] pipeToTunnel: injected 41 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:14:16] readPacketsLoop: packet#3 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:14:20] readPacketsLoop: packet#4 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:14:20] readPacketsLoop: forwarded 4 packets total (this batch: 1)
+flutter: [2026年4月9日 20:14:24] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 20:14:24] readPacketsLoop forwarded 4 total packets before stop
+flutter: [2026年4月9日 20:14:24] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 20:14:24] Packet tunnel stopped
+flutter: [2026年4月9日 20:26:36] === startTunnel called ===
+flutter: [2026年4月9日 20:26:36] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 20:26:36] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 20:26:36] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 20:26:36] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 20:26:36] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 20:26:36] Network settings configured successfully
+flutter: [2026年4月9日 20:26:40] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:41] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:42] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:43] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:44] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:45] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:46] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:47] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:48] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:49] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:26:58] readPacketsLoop: packet#1 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+[2026-04-09T12:36:14.505Z INFO  vnt::nat::stun] stun stun.hitv.com:3478 mapped_addr {221.238.245.30:22498}  changed_addr Some(111.8.3.98:3478)
+[2026-04-09T12:36:15.247Z INFO  vnt::nat::stun] stun stun.cdnbye.com:3478 mapped_addr {117.131.219.42:63874}  changed_addr Some(77.72.169.212:3479)
+[2026-04-09T12:36:15.270Z INFO  vnt::nat::stun] stun stun.miwifi.com:3478 mapped_addr {60.29.153.43:54211}  changed_addr None
+[2026-04-09T12:36:15.288Z INFO  vnt::nat::stun] stun stun.chat.bilibili.com:3478 mapped_addr {60.29.153.43:4235}  changed_addr None
+[2026-04-09T12:36:15.360Z INFO  vnt::nat::stun] stun stun.hitv.com:3478 mapped_addr {221.238.245.30:7845}  changed_addr Some(111.8.3.78:3478)
+flutter: [2026年4月9日 20:26:58] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: [2026年4月9日 20:27:00] pipeToTunnel: injected 21 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:27:01] readPacketsLoop: packet#2 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:27:04] readPacketsLoop: packet#3 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:27:07] readPacketsLoop: packet#4 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: [2026年4月9日 20:27:10] pipeToTunnel: injected 31 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:27:12] readPacketsLoop: packet#5 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: [2026年4月9日 20:27:12] readPacketsLoop: forwarded 5 packets total (this batch: 1)
+flutter: [2026年4月9日 20:27:14] readPacketsLoop: packet#6 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: [2026年4月9日 20:27:17] readPacketsLoop: packet#7 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: [2026年4月9日 20:27:20] pipeToTunnel: injected 41 packets total, lastSize=33, proto=2
+flutter: [2026年4月9日 20:27:23] === stopTunnel called, reason=1 ===
+flutter: [2026年4月9日 20:27:23] readPacketsLoop forwarded 7 total packets before stop
+flutter: [2026年4月9日 20:27:23] pipeToTunnel: pipe closed while reading, got 0/4
+flutter: [2026年4月9日 20:27:23] Packet tunnel stopped
+flutter: [2026年4月9日 20:36:13] === startTunnel called ===
+flutter: [2026年4月9日 20:36:13] Previous state: isRunning=false, extToAppWriteFd=-1, appToExtReadFd=-1, listenSocket=-1, fdsToTransfer.count=0
+flutter: [2026年4月9日 20:36:13] Tunnel config: virtualIp=10.26.0.5, netmask=255.255.255.0, gateway=10.26.0.1, mtu=1410, dns=[], remote=123.57.165.182, routes=[])
+flutter: [2026年4月9日 20:36:13] Pipes created: extToAppWriteFd=6, appToExtReadFd=7, appReadFd=4, appWriteFd=8
+flutter: [2026年4月9日 20:36:13] All loops started, configuring network settings before completing startTunnel
+flutter: [2026年4月9日 20:36:13] Added excluded route for tunnel server: 123.57.165.182/32
+flutter: [2026年4月9日 20:36:13] Network settings configured successfully
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:15.964Z INFO  vnt::nat::stun] stun stun.cdnbye.com:3478 mapped_addr {117.131.219.42:19032}  changed_addr Some(77.72.169.212:3479)
+[2026-04-09T12:36:15.965Z INFO  vnt::handle::maintain::re_nat_type] 当前nat信息:NatInfo { public_ips: [117.131.219.42, 221.238.245.30, 60.29.153.43], public_ports: [12963, 0], public_port_range: 49976, nat_type: Symmetric, local_ipv4: Some(10.5.139.16), ipv6: Some(2001:250:401:7304:ac81:3395:3fe8:de18), udp_ports: [52099, 54820], tcp_port: 52099 }
+[2026-04-09T12:36:15.974Z INFO  vnt::handle::maintain::re_nat_type] 刷新nat结束
+[2026-04-09T12:36:15.975Z INFO  vnt::channel::udp_channel] 切换成对称模式 监听端口数：84
+[2026-04-09T12:36:16.228Z INFO  vnt::channel::punch] 端口变化=117.131.219.42:40553 index=0
+[2026-04-09T12:36:16.228Z INFO  vnt::nat] 回应地址117.131.219.42:40553,来源stun 77.72.169.213:3478
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=4] =====
+flutter: [2026年4月9日 20:36:17] pipeToTunnel: injected 1 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:17.809Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:true,ip:10.26.0.4,info:NatInfo { public_ips: [221.238.245.13, 117.131.219.25, 60.29.153.34], public_ports: [14804, 39037], public_port_range: 50641, nat_type: Symmetric, local_ipv4: Some(192.168.1.77), ipv6: Some(2001:250:401:8206:3d98:4c2c:6b09:9887), udp_ports: [56216, 61358], tcp_port: 56216 }
+[2026-04-09T12:36:17.809Z INFO  vnt::handle::maintain::punch] 第0次发起打洞,目标:10.26.0.4,NatInfo { public_ips: [221.238.245.13, 117.131.219.25, 60.29.153.34], public_ports: [14804, 39037], public_port_range: 50641, nat_type: Symmetric, local_ipv4: Some(192.168.1.77), ipv6: Some(2001:250:401:8206:3d98:4c2c:6b09:9887), udp_ports: [56216, 61358], tcp_port: 56216 }
+[2026-04-09T12:36:17.811Z INFO  vnt::channel::punch] 发送到ipv6地址:[2001:250:401:8206:3d98:4c2c:6b09:9887]:56216,rs=Ok(()) 10.26.0.4
+[2026-04-09T12:36:17.811Z INFO  vnt::channel::punch] 发送到ipv6地址:[2001:250:401:8206:3d98:4c2c:6b09:9887]:61358,rs=Ok(()) 10.26.0.4
+[2026-04-09T12:36:17.831Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 },source=10.26.0.4
+[2026-04-09T12:36:17.831Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 },source=10.26.0.4
+[2026-04-09T12:36:17.842Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: TCP, index: 0, addr: [::ffff:10.134.106.16]:53597 },source=10.26.0.4
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=5] =====
+flutter: [2026年4月9日 20:36:18] pipeToTunnel: injected 2 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:19.028Z INFO  vnt::channel::punch] 端口变化=221.238.245.30:23543 index=1
+[2026-04-09T12:36:19.028Z INFO  vnt::nat] 回应地址221.238.245.30:23543,来源stun 175.6.157.111:3478
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=6] =====
+flutter: [2026年4月9日 20:36:19] pipeToTunnel: injected 3 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:19.924Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:true,ip:10.26.0.2,info:NatInfo { public_ips: [117.131.219.25, 60.29.153.34, 111.33.78.4], public_ports: [36289, 17337], public_port_range: 27082, nat_type: Symmetric, local_ipv4: Some(192.168.1.70), ipv6: None, udp_ports: [52263, 52264], tcp_port: 52263 }
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=7] =====
+flutter: [2026年4月9日 20:36:20] pipeToTunnel: injected 4 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:20.820Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:192.168.1.77:56216,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:20.820Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:221.238.245.13:56216,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:20.885Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:60.29.153.34:56216,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:20.885Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:117.131.219.25:56216,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:20.886Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:[2001:250:401:8206:3d98:4c2c:6b09:9887]:56216,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=8] =====
+flutter: [2026年4月9日 20:36:21] pipeToTunnel: injected 5 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:21.975Z INFO  vnt::handle::maintain::punch] 请求打洞=PunchInfo { public_ip_list: [1971575594, 3723425054, 1008572715], public_port: 40553, public_port_range: 49976, nat_type: Symmetric, reply: false, local_ip: 168135440, local_port: 52099, ipv6: [32, 1, 2, 80, 4, 1, 115, 4, 172, 129, 51, 149, 63, 232, 222, 24], ipv6_port: 52099, tcp_port: 52099, udp_ports: [52099, 54820], public_ports: [40553, 23543], special_fields: SpecialFields { unknown_fields: UnknownFields { fields: None }, cached_size: CachedSize { size: 0 } } }
+[2026-04-09T12:36:21.975Z INFO  vnt::handle::maintain::punch] 目标:10.26.0.70,当前nat:NatInfo { public_ips: [117.131.219.42, 221.238.245.30, 60.29.153.43], public_ports: [40553, 23543], public_port_range: 49976, nat_type: Symmetric, local_ipv4: Some(10.5.139.16), ipv6: Some(2001:250:401:7304:ac81:3395:3fe8:de18), udp_ports: [52099, 54820], tcp_port: 52099 } 第0次发起打洞协商请求， 第:1轮
+[2026-04-09T12:36:22.059Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:false,ip:10.26.0.70,info:NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:36:22.059Z INFO  vnt::handle::maintain::punch] 第0次发起打洞,目标:10.26.0.70,NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=9] =====
+flutter: [2026年4月9日 20:36:22] pipeToTunnel: injected 6 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=10] =====
+flutter: [2026年4月9日 20:36:23] pipeToTunnel: injected 7 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=11] =====
+flutter: [2026年4月9日 20:36:24] pipeToTunnel: injected 8 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:24.668Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 } src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoRequest) len=96
+[2026-04-09T12:36:25.063Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:111.167.201.13:38804,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:25.063Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:192.168.124.70:38804,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=12] =====
+flutter: [2026年4月9日 20:36:25] pipeToTunnel: injected 9 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:25.691Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 } src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoRequest) len=96
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=13] =====
+flutter: [2026年4月9日 20:36:26] pipeToTunnel: injected 10 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:26.614Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 } src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoRequest) len=96
+[2026-04-09T12:36:26.928Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:true,ip:10.26.0.2,info:NatInfo { public_ips: [117.131.219.25, 60.29.153.34, 111.33.78.4], public_ports: [36289, 17337], public_port_range: 27082, nat_type: Symmetric, local_ipv4: Some(192.168.1.70), ipv6: None, udp_ports: [52263, 52264], tcp_port: 52263 }
+[2026-04-09T12:36:26.929Z INFO  vnt::handle::maintain::punch] 第0次发起打洞,目标:10.26.0.2,NatInfo { public_ips: [117.131.219.25, 60.29.153.34, 111.33.78.4], public_ports: [36289, 17337], public_port_range: 27082, nat_type: Symmetric, local_ipv4: Some(192.168.1.70), ipv6: None, udp_ports: [52263, 52264], tcp_port: 52263 }
+[2026-04-09T12:36:26.945Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:52263 },source=10.26.0.2
+[2026-04-09T12:36:26.945Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:52264 },source=10.26.0.2
+[2026-04-09T12:36:26.953Z INFO  vnt::handle::recv_data::client] PunchRequest=RouteKey { protocol: TCP, index: 0, addr: [::ffff:10.134.106.16]:7160 },source=10.26.0.2
+[AppDelegate] applicationDidEnterBackground
+[2026-04-09T12:36:28.978Z INFO  vnt::handle::maintain::punch] 请求打洞=PunchInfo { public_ip_list: [1971575594, 3723425054, 1008572715], public_port: 40553, public_port_range: 49976, nat_type: Symmetric, reply: false, local_ip: 168135440, local_port: 52099, ipv6: [32, 1, 2, 80, 4, 1, 115, 4, 172, 129, 51, 149, 63, 232, 222, 24], ipv6_port: 52099, tcp_port: 52099, udp_ports: [52099, 54820], public_ports: [40553, 23543], special_fields: SpecialFields { unknown_fields: UnknownFields { fields: None }, cached_size: CachedSize { size: 0 } } }
+[2026-04-09T12:36:28.978Z INFO  vnt::handle::maintain::punch] 目标:10.26.0.70,当前nat:NatInfo { public_ips: [117.131.219.42, 221.238.245.30, 60.29.153.43], public_ports: [40553, 23543], public_port_range: 49976, nat_type: Symmetric, local_ipv4: Some(10.5.139.16), ipv6: Some(2001:250:401:7304:ac81:3395:3fe8:de18), udp_ports: [52099, 54820], tcp_port: 52099 } 第0次发起打洞协商请求， 第:2轮
+[2026-04-09T12:36:29.012Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:false,ip:10.26.0.70,info:NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:36:29.012Z INFO  vnt::handle::maintain::punch] 第2次发起打洞,目标:10.26.0.70,NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:36:29.932Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:60.29.153.34:52263,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:29.932Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:117.131.219.25:52263,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:29.938Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:192.168.1.70:52263,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:29.941Z WARN  vnt::channel::tcp_channel] 发送失败,链接终止:111.33.78.4:52263,deadline has elapsed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::channel::tcp_channel::connect_tcp0::{{closure}}
+       5: vnt::channel::tcp_channel::connect_tcp_handle::{{closure}}::{{closure}}
+       6: <core::pin::Pin<P> as core::future::future::Future>::poll
+       7: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+       8: tokio::runtime::task::core::Core<T,S>::poll
+       9: tokio::runtime::task::harness::poll_future::{{closure}}
+      10: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      11: std::panicking::catch_unwind::do_call
+      12: ___rust_try
+      13: std::panic::catch_unwind
+      14: tokio::runtime::task::harness::poll_future
+      15: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      16: tokio::runtime::task::harness::Harness<T,S>::poll
+      17: tokio::runtime::task::raw::poll
+      18: tokio::runtime::task::raw::RawTask::poll
+      19: tokio::runtime::task::LocalNotified<S>::run
+      20: tokio::runtime::scheduler::multi_thread::worker::Context::run_task::{{closure}}
+      21: tokio::runtime::scheduler::multi_thread::worker::Context::run_task
+      22: tokio::runtime::scheduler::multi_thread::worker::Context::run
+      23: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}::{{closure}}
+      24: tokio::runtime::context::scoped::Scoped<T>::set
+      25: tokio::runtime::context::set_scheduler::{{closure}}
+      26: std::thread::local::LocalKey<T>::try_with
+      27: std::thread::local::LocalKey<T>::with
+      28: tokio::runtime::context::set_scheduler
+      29: tokio::runtime::scheduler::multi_thread::worker::run::{{closure}}
+      30: tokio::runtime::context::runtime::enter_runtime
+      31: tokio::runtime::scheduler::multi_thread::worker::run
+      32: tokio::runtime::scheduler::multi_thread::worker::Launch::launch::{{closure}}
+      33: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+      34: tokio::runtime::task::core::Core<T,S>::poll::{{closure}}
+      35: tokio::runtime::task::core::Core<T,S>::poll
+      36: tokio::runtime::task::harness::poll_future::{{closure}}
+      37: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      38: std::panicking::catch_unwind::do_call
+      39: ___rust_try
+      40: std::panic::catch_unwind
+      41: tokio::runtime::task::harness::poll_future
+      42: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+      43: tokio::runtime::task::harness::Harness<T,S>::poll
+      44: tokio::runtime::task::raw::poll
+      45: tokio::runtime::task::raw::RawTask::poll
+      46: tokio::runtime::task::UnownedTask<S>::run
+      47: tokio::runtime::blocking::pool::Task::run
+      48: tokio::runtime::blocking::pool::Inner::run
+      49: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+      50: std::sys::backtrace::__rust_begin_short_backtrace
+      51: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      52: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      53: std::panicking::catch_unwind::do_call
+      54: ___rust_try
+      55: std::thread::Builder::spawn_unchecked_::{{closure}}
+      56: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      57: std::sys::thread::unix::Thread::new::thread_start
+      58: <unknown>
+[2026-04-09T12:36:30.551Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#1] src=10.26.0.5 dst=10.26.0.70 len=84
+[2026-04-09T12:36:30.551Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#1] src=10.26.0.5 dst=10.26.0.70 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:30.552Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#2] src=10.26.0.5 dst=10.26.0.70 kind=None len=84
+[2026-04-09T12:36:30.573Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 } src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:30.573Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:30.573Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.70 dst=10.26.0.5 len=84
+[2026-04-09T12:36:30.575Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 1, addr: 10.134.106.16:61358 } src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:30.575Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:30.575Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.70 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=18] =====
+flutter: [2026年4月9日 20:36:30] readPacketsLoop: packet#1 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: [2026年4月9日 20:36:30] readPacketsLoop: forwarded 1 packets total (this batch: 1)
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:31.557Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#2] src=10.26.0.5 dst=10.26.0.70 len=84
+[2026-04-09T12:36:31.557Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#3] src=10.26.0.5 dst=10.26.0.70 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:31.557Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#4] src=10.26.0.5 dst=10.26.0.70 kind=None len=84
+[2026-04-09T12:36:31.576Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 } src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:31.576Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:31.576Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.70 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=19] =====
+flutter: [2026年4月9日 20:36:31] readPacketsLoop: packet#2 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:32.553Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#3] src=10.26.0.5 dst=10.26.0.70 len=84
+[2026-04-09T12:36:32.553Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#5] src=10.26.0.5 dst=10.26.0.70 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:32.553Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#6] src=10.26.0.5 dst=10.26.0.70 kind=None len=84
+[2026-04-09T12:36:32.577Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 } src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:32.577Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:32.577Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.70 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=20] =====
+flutter: [2026年4月9日 20:36:32] readPacketsLoop: packet#3 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:33.552Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#4] src=10.26.0.5 dst=10.26.0.70 len=84
+[2026-04-09T12:36:33.552Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#7] src=10.26.0.5 dst=10.26.0.70 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:33.553Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#8] src=10.26.0.5 dst=10.26.0.70 kind=None len=84
+[2026-04-09T12:36:33.576Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 } src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:33.576Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.70 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:33.576Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.70 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=21] =====
+flutter: [2026年4月9日 20:36:33] readPacketsLoop: packet#4 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.70 size=84 index=0
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=24] =====
+flutter: [2026年4月9日 20:36:37] pipeToTunnel: injected 26 packets total, lastSize=33, proto=2
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:37.906Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#5] src=10.26.0.5 dst=10.26.0.4 len=84
+[2026-04-09T12:36:37.906Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#9] src=10.26.0.5 dst=10.26.0.4 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:37.906Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#10] src=10.26.0.5 dst=10.26.0.4 kind=None len=84
+[2026-04-09T12:36:37.914Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 } src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:37.914Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:37.914Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.4 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=25] =====
+flutter: [2026年4月9日 20:36:37] readPacketsLoop: packet#5 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:38.910Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-read#6] src=10.26.0.5 dst=10.26.0.4 len=84
+[2026-04-09T12:36:38.910Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-out#11] src=10.26.0.5 dst=10.26.0.4 kind=Some(EchoRequest) len=84
+[2026-04-09T12:36:38.910Z INFO  vnt::handle::tun_tap::tun_handler] [iOS ICMP TRACE][tun-send-ok#12] src=10.26.0.5 dst=10.26.0.4 kind=None len=84
+[2026-04-09T12:36:38.919Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-in] route=RouteKey { protocol: UDP, index: 0, addr: 10.134.106.16:56216 } src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:38.919Z INFO  vnt::handle::recv_data::client] [iOS ICMP TRACE][client-write] src=10.26.0.4 dst=10.26.0.5 kind=Some(EchoReply) len=96
+[2026-04-09T12:36:38.919Z INFO  tun::ios_stub::device] [iOS ICMP TRACE][ios-pipe-write] src=10.26.0.4 dst=10.26.0.5 len=84
+flutter: iOS: ===== EXTENSION LOG DELTA START [tick=26] =====
+flutter: [2026年4月9日 20:36:38] readPacketsLoop: packet#6 family=AF_INET proto=ICMP src=10.26.0.5 dst=10.26.0.4 size=84 index=0
+flutter: iOS: ===== EXTENSION LOG DELTA END =====
+[2026-04-09T12:36:41.009Z INFO  vnt::handle::maintain::idle] route Timeout 10.26.0.70,Route { protocol: UDP, index: 1, addr: 10.134.106.16:61358, metric: 2, rt: 20 }
+[2026-04-09T12:36:41.988Z INFO  vnt::handle::maintain::punch] 请求打洞=PunchInfo { public_ip_list: [1971575594, 3723425054, 1008572715], public_port: 40553, public_port_range: 49976, nat_type: Symmetric, reply: false, local_ip: 168135440, local_port: 52099, ipv6: [32, 1, 2, 80, 4, 1, 115, 4, 172, 129, 51, 149, 63, 232, 222, 24], ipv6_port: 52099, tcp_port: 52099, udp_ports: [52099, 54820], public_ports: [40553, 23543], special_fields: SpecialFields { unknown_fields: UnknownFields { fields: None }, cached_size: CachedSize { size: 0 } } }
+[2026-04-09T12:36:41.988Z INFO  vnt::handle::maintain::punch] 目标:10.26.0.70,当前nat:NatInfo { public_ips: [117.131.219.42, 221.238.245.30, 60.29.153.43], public_ports: [40553, 23543], public_port_range: 49976, nat_type: Symmetric, local_ipv4: Some(10.5.139.16), ipv6: Some(2001:250:401:7304:ac81:3395:3fe8:de18), udp_ports: [52099, 54820], tcp_port: 52099 } 第1次发起打洞协商请求， 第:4轮
+[2026-04-09T12:36:42.015Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:false,ip:10.26.0.70,info:NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:36:42.015Z INFO  vnt::handle::maintain::punch] 第3次发起打洞,目标:10.26.0.70,NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+
+The OS has terminated the Flutter debug connection for being inactive in the background for too long.
+
+There are no errors with your Flutter application.
+
+To reconnect, launch your application again via 'flutter run'
+[2026-04-09T12:37:00.993Z INFO  vnt::handle::maintain::punch] 请求打洞=PunchInfo { public_ip_list: [1971575594, 3723425054, 1008572715], public_port: 40553, public_port_range: 49976, nat_type: Symmetric, reply: false, local_ip: 168135440, local_port: 52099, ipv6: [32, 1, 2, 80, 4, 1, 115, 4, 172, 129, 51, 149, 63, 232, 222, 24], ipv6_port: 52099, tcp_port: 52099, udp_ports: [52099, 54820], public_ports: [40553, 23543], special_fields: SpecialFields { unknown_fields: UnknownFields { fields: None }, cached_size: CachedSize { size: 0 } } }
+[2026-04-09T12:37:00.994Z INFO  vnt::handle::maintain::punch] 目标:10.26.0.70,当前nat:NatInfo { public_ips: [117.131.219.42, 221.238.245.30, 60.29.153.43], public_ports: [40553, 23543], public_port_range: 49976, nat_type: Symmetric, local_ipv4: Some(10.5.139.16), ipv6: Some(2001:250:401:7304:ac81:3395:3fe8:de18), udp_ports: [52099, 54820], tcp_port: 52099 } 第2次发起打洞协商请求， 第:7轮
+[2026-04-09T12:37:01.024Z INFO  vnt::handle::maintain::punch] 发送打洞协商消息,是否对端发起:false,ip:10.26.0.70,info:NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:37:01.024Z INFO  vnt::handle::maintain::punch] 第4次发起打洞,目标:10.26.0.70,NatInfo { public_ips: [111.167.201.13], public_ports: [50646, 50647], public_port_range: 0, nat_type: Cone, local_ipv4: Some(192.168.124.70), ipv6: None, udp_ports: [38804, 34888], tcp_port: 38804 }
+[2026-04-09T12:37:01.670Z ERROR tun::ios_stub::device] [iOS pipe] read total_length failed: pipe closed
+[2026-04-09T12:37:01.672Z ERROR vnt::handle::tun_tap::unix] pipe closed
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::tun_tap::unix::start_simple0
+       5: vnt::handle::tun_tap::unix::start_simple
+       6: vnt::handle::tun_tap::tun_handler::start::{{closure}}
+       7: std::sys::backtrace::__rust_begin_short_backtrace
+       8: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+       9: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      10: std::panicking::catch_unwind::do_call
+      11: ___rust_try
+      12: std::thread::Builder::spawn_unchecked_::{{closure}}
+      13: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      14: std::sys::thread::unix::Thread::new::thread_start
+      15: <unknown>
+[2026-04-09T12:37:01.673Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:03.899Z INFO  vnt::util::notify] stop tun_device
+[2026-04-09T12:37:03.899Z INFO  vnt::util::notify] stop Scheduler
+[2026-04-09T12:37:03.900Z INFO  vnt::util::notify] stop tcpChannel
+[2026-04-09T12:37:03.900Z INFO  vnt::util::notify] stop wsChannel
+[2026-04-09T12:37:03.902Z INFO  vnt::util::notify] stop sub_udp_listen
+[2026-04-09T12:37:03.903Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:03.905Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:05.165Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:05.169Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:06.513Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:06.514Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:07.744Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:07.746Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:08.971Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:08.973Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:10.164Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:10.165Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:11.516Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:11.518Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:12.773Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:12.775Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:14.082Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:14.085Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:15.363Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:15.364Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:16.610Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:16.611Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[VPNManager] VPN status changed: disconnected
+[2026-04-09T12:37:17.967Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:17.969Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:19.288Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:19.290Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:20.538Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:20.540Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:21.774Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:21.776Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:23.014Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:23.016Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:24.288Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:24.288Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:25.600Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:26.958Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:26.958Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:26.961Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:28.563Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:28.564Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:29.939Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:29.941Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[AppDelegate] applicationWillEnterForeground
+[2026-04-09T12:37:29.941Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:31.176Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:32.429Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:32.438Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:33.711Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:33.713Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:34.929Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:34.932Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:36.188Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:36.190Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:37.475Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:37.477Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:38.739Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:38.740Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:40.093Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:40.096Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:41.453Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:41.454Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:42.736Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:42.738Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:43.981Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:43.983Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:45.325Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:45.327Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:46.664Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:46.667Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:47.951Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:47.953Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:49.234Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:49.236Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:50.540Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+[2026-04-09T12:37:50.542Z ERROR tun::ios_stub::device] [iOS pipe] write total_length header failed: Broken pipe (os error 32)
+[2026-04-09T12:37:51.848Z ERROR vnt::handle::recv_data] [mainUdp]-10.134.106.16:61358-Broken pipe (os error 32)
+    
+    Stack backtrace:
+       0: std::backtrace::Backtrace::create
+       1: std::backtrace::Backtrace::capture
+       2: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+       3: <core::result::Result<T,F> as core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible,E>>>::from_residual
+       4: vnt::handle::recv_data::client::ClientPacketHandler<Device>::ip_turn
+       5: <vnt::handle::recv_data::client::ClientPacketHandler<Device> as vnt::handle::recv_data::PacketHandler>::handle
+       6: vnt::handle::recv_data::RecvDataHandler<Call,Device>::handle0
+       7: <vnt::handle::recv_data::RecvDataHandler<Call,Device> as vnt::channel::handler::RecvChannelHandler>::handle
+       8: vnt::channel::udp_channel::main_udp_listen0
+       9: vnt::channel::udp_channel::main_udp_listen::{{closure}}
+      10: std::sys::backtrace::__rust_begin_short_backtrace
+      11: std::thread::Builder::spawn_unchecked_::{{closure}}::{{closure}}
+      12: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+      13: std::panicking::catch_unwind::do_call
+      14: ___rust_try
+      15: std::thread::Builder::spawn_unchecked_::{{closure}}
+      16: core::ops::function::FnOnce::call_once{{vtable.shim}}
+      17: std::sys::thread::unix::Thread::new::thread_start
+      18: <unknown>
+Message from debugger: killed

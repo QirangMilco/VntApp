@@ -2,6 +2,7 @@ import UIKit
 import Flutter
 import NetworkExtension
 import Foundation
+import Darwin
 
 // Note: TunnelConfig and ExternalRoute are defined in SharedTunnelConfig.swift
 // which is compiled into both the Runner and PacketTunnelExtension targets.
@@ -12,9 +13,16 @@ import Foundation
     
     static let shared = VPNManager()
     
-    private static let appGroupIdentifier = "group.top.wherewego.vntApp"
-    private static let bundleIdentifier = "top.wherewego.vntApp"
-    private static let tunnelBundleIdentifier = "top.wherewego.vntApp.PacketTunnel"
+    private static let appGroupIdentifier = "group.io.mt64.v4"
+    private static let bundleIdentifier = "io.mt63.v4"
+    private static let tunnelBundleIdentifier = "io.mt63.v4.extension"
+    private static var isSimulator: Bool {
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return false
+        #endif
+    }
     
     private var tunnelManager: NETunnelProviderManager?
     /// Queue to protect tunnelManager access and coordinate async operations
@@ -37,6 +45,11 @@ import Foundation
     // Singleton
     private override init() {
         super.init()
+        if Self.isSimulator {
+            managerReady = true
+            NSLog("[VPNManager] Running on iOS Simulator, NetworkExtension is unavailable")
+            return
+        }
         loadTunnelManager()
     }
     
@@ -115,20 +128,32 @@ import Foundation
     ///   - completion: Called with the TUN file descriptor when ready, or error
     @objc func startVpn(config: [String: Any], completion: @escaping (Int, Error?) -> Void) {
         NSLog("[VPNManager] startVpn called")
+
+        if Self.isSimulator {
+            let error = NSError(
+                domain: "VPNManager",
+                code: 1001,
+                userInfo: [NSLocalizedDescriptionKey: "iOS 模拟器不支持 Network Extension，请在真机上启用 VPN"]
+            )
+            NSLog("[VPNManager] startVpn blocked on simulator")
+            DispatchQueue.main.async { completion(-1, error) }
+            return
+        }
         
         // Dispatch the entire operation to a background queue to NEVER block the main thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
             // Build tunnel config
+            let tunnelServerAddress = config["tunnelServerAddress"] as? String
             let tunnelConfig = TunnelConfig(
                 virtualIp: config["virtualIp"] as? String ?? "",
                 virtualNetmask: config["virtualNetmask"] as? String ?? "255.255.255.0",
                 virtualGateway: config["virtualGateway"] as? String ?? "",
                 virtualNetwork: config["virtualNetwork"] as? String ?? "",
                 mtu: config["mtu"] as? Int ?? 1400,
-                tunnelRemoteAddress: "127.0.0.1",  // Dummy, required by iOS
-                tunnelServerAddress: config["tunnelServerAddress"] as? String,
+                tunnelRemoteAddress: self.parseServerIPv4(tunnelServerAddress) ?? "127.0.0.1",
+                tunnelServerAddress: tunnelServerAddress,
                 externalRoutes: self.parseExternalRoutes(config["externalRoute"] as? [[String: String]] ?? []),
                 dnsServers: config["dnsServers"] as? [String] ?? []
             )
@@ -174,8 +199,44 @@ import Foundation
                 return
             }
             
-            NSLog("[VPNManager] ✅ Manager reloaded, starting VPN tunnel...")
+            NSLog("[VPNManager] ✅ Manager reloaded, preparing VPN tunnel...")
             self.tunnelManager = manager
+
+            // iOS may persist a disabled/stale manager (e.g. after re-signing/profile changes).
+            // NEVPNErrorDomain Code=2 usually means configuration disabled.
+            let proto = manager.protocolConfiguration as? NETunnelProviderProtocol
+            let bundleMatches = (proto?.providerBundleIdentifier == Self.tunnelBundleIdentifier)
+            if !manager.isEnabled || !bundleMatches {
+                NSLog("[VPNManager] ⚠️ Manager needs refresh: enabled=\(manager.isEnabled), bundle=\(proto?.providerBundleIdentifier ?? "nil"), expected=\(Self.tunnelBundleIdentifier)")
+
+                let refreshedProto = NETunnelProviderProtocol()
+                refreshedProto.providerBundleIdentifier = Self.tunnelBundleIdentifier
+                refreshedProto.providerConfiguration = proto?.providerConfiguration ?? [:]
+                refreshedProto.serverAddress = proto?.serverAddress ?? "VNT"
+
+                manager.protocolConfiguration = refreshedProto
+                manager.localizedDescription = manager.localizedDescription ?? "VNT VPN"
+                manager.isEnabled = true
+
+                manager.saveToPreferences { [weak self] error in
+                    guard let self = self else { return }
+                    if let error = error as NSError? {
+                        NSLog("[VPNManager] ❌ Failed to save refreshed manager: \(error)")
+                        DispatchQueue.main.async { completion(-1, error) }
+                        return
+                    }
+                    manager.loadFromPreferences { loadError in
+                        if let loadError = loadError as NSError? {
+                            NSLog("[VPNManager] ❌ Failed to reload refreshed manager: \(loadError)")
+                            DispatchQueue.main.async { completion(-1, loadError) }
+                            return
+                        }
+                        self.tunnelManager = manager
+                        self.doStartVpn(tunnelConfig: tunnelConfig, completion: completion)
+                    }
+                }
+                return
+            }
             
             // Start the tunnel
             do {
@@ -458,6 +519,32 @@ import Foundation
             guard let destination = route["destination"],
                   let netmask = route["netmask"] else { return nil }
             return ExternalRoute(destination: destination, netmask: netmask)
+        }
+    }
+
+    private func parseServerIPv4(_ raw: String?) -> String? {
+        guard var s = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty else {
+            return nil
+        }
+        if let schemeRange = s.range(of: "://") {
+            s = String(s[schemeRange.upperBound...])
+        }
+        if s.hasPrefix("[") {
+            return nil
+        }
+        if let slashIndex = s.firstIndex(of: "/") {
+            s = String(s[..<slashIndex])
+        }
+        let parts = s.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
+        guard let host = parts.first, !host.isEmpty else {
+            return nil
+        }
+        var addr = in_addr()
+        return host.withCString { cStr -> String? in
+            if inet_pton(AF_INET, cStr, &addr) == 1 {
+                return String(host)
+            }
+            return nil
         }
     }
     

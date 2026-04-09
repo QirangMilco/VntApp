@@ -18,6 +18,7 @@ use std::io;
 use std::net::Ipv4Addr;
 use std::os::fd::AsRawFd;
 use std::sync::Arc;
+use tun::device::IFace;
 use tun::Device;
 
 const STOP: Token = Token(0);
@@ -116,6 +117,21 @@ fn start_simple0(
             }
             let mut retries = 0;
             loop {
+                #[cfg(target_os = "ios")]
+                let len = match device.read(&mut buf[start..]) {
+                    Ok(len) => len + start,
+                    Err(e) => {
+                        if e.kind() == io::ErrorKind::WouldBlock {
+                            retries += 1;
+                            if retries < 8 {
+                                continue;
+                            }
+                            break;
+                        }
+                        Err(e)?
+                    }
+                };
+                #[cfg(not(target_os = "ios"))]
                 let len = match fd.read(&mut buf[start..]) {
                     Ok(len) => len + start,
                     Err(e) => {

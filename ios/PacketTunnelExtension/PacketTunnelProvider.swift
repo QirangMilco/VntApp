@@ -1,6 +1,7 @@
 import NetworkExtension
 import os.log
 import Foundation
+import Darwin
 
 /// VNT Packet Tunnel Extension Provider
 ///
@@ -21,7 +22,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private static let log = OSLog(subsystem: "top.wherewego.vntApp.PacketTunnel", category: "PacketTunnel")
     
-    private static let appGroupIdentifier = "group.top.wherewego.vntApp"
+    private static let appGroupIdentifier = "group.io.mt64.v4"
     
     /// Shared UserDefaults via App Group
     private var sharedDefaults: UserDefaults? {
@@ -149,26 +150,40 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         // Start Unix Domain Socket server for fd transfer
         startFdTransferServer()
         
-        logToFile("All loops started, calling completionHandler(nil) immediately")
+        logToFile("All loops started, configuring network settings before completing startTunnel")
         
-        // Signal readiness and call completionHandler immediately so the system
-        // considers the tunnel established and doesn't kill us for being "unresponsive"
-        sharedDefaults.set(true, forKey: "tunnelReady")
-        sharedDefaults.set(Date().timeIntervalSince1970, forKey: "tunnelReadyTime")
-        
-        // Complete the tunnel startup — MUST call this to tell iOS the tunnel is up
-        completionHandler(nil)
-        
-        // Now configure network settings asynchronously AFTER completion
-        // If this fails, the tunnel is still up but won't route traffic correctly
+        // Configure routes/DNS first. iOS-generated traffic will not reliably enter the
+        // packet tunnel until these settings are applied.
         configureNetworkSettings(config: config) { [weak self] error in
-            if let error = error {
-                self?.logToFile("WARNING: Failed to configure network settings: \(error.localizedDescription)")
-                self?.logToFile("Tunnel is up but network routing may not work")
-                // Do NOT call completionHandler again — it was already called above
-            } else {
-                self?.logToFile("Network settings configured successfully")
+            guard let self = self else {
+                completionHandler(NSError(domain: "VNTTunnelError", code: 99,
+                                          userInfo: [NSLocalizedDescriptionKey: "PacketTunnelProvider released during startup"]))
+                return
             }
+            if let error = error {
+                self.logToFile("ERROR: Failed to configure network settings: \(error.localizedDescription)")
+                self.isRunning = false
+                if self.extToAppWriteFd >= 0 { close(self.extToAppWriteFd); self.extToAppWriteFd = -1 }
+                if self.appToExtReadFd >= 0 { close(self.appToExtReadFd); self.appToExtReadFd = -1 }
+                for fd in self.fdsToTransfer {
+                    if fd >= 0 { close(fd) }
+                }
+                self.fdsToTransfer.removeAll()
+                if self.listenSocket >= 0 {
+                    close(self.listenSocket)
+                    self.listenSocket = -1
+                }
+                try? FileManager.default.removeItem(atPath: self.socketPath)
+                sharedDefaults.set(false, forKey: "tunnelReady")
+                sharedDefaults.removeObject(forKey: "tunnelReadyTime")
+                completionHandler(error)
+                return
+            }
+
+            self.logToFile("Network settings configured successfully")
+            sharedDefaults.set(true, forKey: "tunnelReady")
+            sharedDefaults.set(Date().timeIntervalSince1970, forKey: "tunnelReadyTime")
+            completionHandler(nil)
         }
     }
     
@@ -266,6 +281,58 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
     private var packetCount = 0
     private var lastHeartbeatLog = Date()
+    private var outboundPacketDetailCount = 0
+
+    private func ipv4AddressString(from packet: Data, start: Int) -> String? {
+        guard packet.count >= start + 4 else { return nil }
+        return [
+            String(packet[start]),
+            String(packet[start + 1]),
+            String(packet[start + 2]),
+            String(packet[start + 3])
+        ].joined(separator: ".")
+    }
+
+    private func protocolName(_ proto: UInt8) -> String {
+        switch proto {
+        case 1:
+            return "ICMP"
+        case 6:
+            return "TCP"
+        case 17:
+            return "UDP"
+        default:
+            return "PROTO_\(proto)"
+        }
+    }
+
+    private func logOutboundPacketDetail(packet: Data, protocolFamily: NSNumber, index: Int) {
+        guard outboundPacketDetailCount < 20 else { return }
+        outboundPacketDetailCount += 1
+
+        let family = protocolFamily.int32Value
+        guard family == AF_INET else {
+            logToFile("readPacketsLoop: packet#\(outboundPacketDetailCount) family=\(family) size=\(packet.count) index=\(index)")
+            return
+        }
+
+        guard packet.count >= 20 else {
+            logToFile("readPacketsLoop: packet#\(outboundPacketDetailCount) family=AF_INET size=\(packet.count) index=\(index) invalid=short-ipv4")
+            return
+        }
+
+        let version = packet[0] >> 4
+        let ihl = Int(packet[0] & 0x0F) * 4
+        guard version == 4, ihl >= 20, packet.count >= ihl else {
+            logToFile("readPacketsLoop: packet#\(outboundPacketDetailCount) family=AF_INET size=\(packet.count) index=\(index) invalid=bad-ipv4-header")
+            return
+        }
+
+        let proto = packet[9]
+        let src = ipv4AddressString(from: packet, start: 12) ?? "?"
+        let dst = ipv4AddressString(from: packet, start: 16) ?? "?"
+        logToFile("readPacketsLoop: packet#\(outboundPacketDetailCount) family=AF_INET proto=\(protocolName(proto)) src=\(src) dst=\(dst) size=\(packet.count) index=\(index)")
+    }
 
     private func readPacketsLoop() {
         guard isRunning else { return }
@@ -280,6 +347,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
                 // total_length = 4 (protocol_family) + IP_packet_length
                 for (index, packet) in packets.enumerated() {
                     let proto = protocols[index].int32Value
+                    self.logOutboundPacketDetail(packet: packet, protocolFamily: protocols[index], index: index)
 
                     var totalLen = UInt32(4 + packet.count).bigEndian
                     var protoVal = UInt32(proto).bigEndian
@@ -318,6 +386,31 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
     }
     
+    private var pipeToTunnelPacketCount = 0
+    private var lastPipeToTunnelLog = Date()
+
+    private func readExact(from fd: Int32, into buffer: UnsafeMutableRawPointer, byteCount: Int) -> Bool {
+        var offset = 0
+        while offset < byteCount {
+            let n = read(fd, buffer.advanced(by: offset), byteCount - offset)
+            if n > 0 {
+                offset += n
+                continue
+            }
+            if n == 0 {
+                logToFile("pipeToTunnel: pipe closed while reading, got \(offset)/\(byteCount)")
+                return false
+            }
+            if errno == EAGAIN || errno == EWOULDBLOCK {
+                usleep(1_000)
+                continue
+            }
+            logToFile("pipeToTunnel: readExact failed, got \(offset)/\(byteCount), errno=\(errno)")
+            return false
+        }
+        return true
+    }
+
     private func pipeToTunnelLoop() {
         guard isRunning, appToExtReadFd >= 0 else { return }
 
@@ -326,13 +419,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
         // Read total_length prefix (4 bytes)
         var lengthBytes = [UInt8](repeating: 0, count: 4)
-        let lengthRead = read(appToExtReadFd, &lengthBytes, 4)
-
-        guard lengthRead == 4 else {
-            if isRunning {
-                logToFile("pipeToTunnel: failed to read length, got \(lengthRead) bytes, errno=\(errno)")
-                usleep(100_000) // 100ms
-            }
+        guard lengthBytes.withUnsafeMutableBytes({ raw in
+            readExact(from: appToExtReadFd, into: raw.baseAddress!, byteCount: 4)
+        }) else {
             return
         }
 
@@ -347,33 +436,32 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
         // Read protocol_family (4 bytes)
         var protoBytes = [UInt8](repeating: 0, count: 4)
-        var protoReadTotal = 0
-        while protoReadTotal < 4 {
-            let n = read(appToExtReadFd, &protoBytes[protoReadTotal], 4 - protoReadTotal)
-            guard n > 0 else {
-                logToFile("pipeToTunnel: failed to read proto (got \(protoReadTotal)/4), errno=\(errno)")
-                return
-            }
-            protoReadTotal += n
+        guard protoBytes.withUnsafeMutableBytes({ raw in
+            readExact(from: appToExtReadFd, into: raw.baseAddress!, byteCount: 4)
+        }) else {
+            return
         }
 
         let protocolFamily = Int32(bitPattern: UInt32(bigEndian: protoBytes.withUnsafeBytes { $0.load(as: UInt32.self) }))
 
         // Read packet data
         var packetData = [UInt8](repeating: 0, count: packetLength)
-        var totalRead = 0
-        while totalRead < packetLength {
-            let n = read(appToExtReadFd, &packetData[totalRead], packetLength - totalRead)
-            guard n > 0 else {
-                logToFile("pipeToTunnel: failed to read packet data (got \(totalRead)/\(packetLength)), errno=\(errno)")
-                return
-            }
-            totalRead += n
+        guard packetData.withUnsafeMutableBytes({ raw in
+            readExact(from: appToExtReadFd, into: raw.baseAddress!, byteCount: packetLength)
+        }) else {
+            return
         }
 
         // Write to tunnel via packetFlow.writePackets with the correct protocol family
-        let packet = Data(bytes: packetData, count: totalRead)
+        let packet = Data(packetData)
         packetFlow.writePackets([packet], withProtocols: [NSNumber(value: protocolFamily)])
+
+        pipeToTunnelPacketCount += 1
+        let now = Date()
+        if pipeToTunnelPacketCount <= 10 || pipeToTunnelPacketCount % 100 == 0 || now.timeIntervalSince(lastPipeToTunnelLog) > 10 {
+            logToFile("pipeToTunnel: injected \(pipeToTunnelPacketCount) packets total, lastSize=\(packet.count), proto=\(protocolFamily)")
+            lastPipeToTunnelLog = now
+        }
 
         // Continue reading
         pipeToTunnelLoop()
@@ -556,10 +644,13 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         ipv4Settings.includedRoutes = includedRoutes
         
         // Exclude the tunnel server to avoid routing loop
-        if let serverAddress = config.tunnelServerAddress, !serverAddress.isEmpty {
-            let serverIP = serverAddress.components(separatedBy: ":").first ?? serverAddress
-            let serverRoute = NEIPv4Route(destinationAddress: serverIP, subnetMask: "255.255.255.255")
+        if let serverAddress = config.tunnelServerAddress,
+           let serverIPv4 = parseServerIPv4(serverAddress) {
+            let serverRoute = NEIPv4Route(destinationAddress: serverIPv4, subnetMask: "255.255.255.255")
             ipv4Settings.excludedRoutes = [serverRoute]
+            logToFile("Added excluded route for tunnel server: \(serverIPv4)/32")
+        } else if let serverAddress = config.tunnelServerAddress, !serverAddress.isEmpty {
+            logToFile("Skip excluded route: invalid tunnelServerAddress=\(serverAddress)")
         }
         
         settings.ipv4Settings = ipv4Settings
@@ -577,6 +668,39 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         
         return settings
+    }
+
+    /// Parse tunnel server address to IPv4 string.
+    /// Accepts forms like:
+    /// - 1.2.3.4
+    /// - 1.2.3.4:39872
+    /// - tcp://1.2.3.4:39872
+    private func parseServerIPv4(_ raw: String) -> String? {
+        var s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if s.isEmpty { return nil }
+
+        if let schemeRange = s.range(of: "://") {
+            s = String(s[schemeRange.upperBound...])
+        }
+
+        if s.hasPrefix("[") {
+            return nil
+        }
+
+        if let slashIndex = s.firstIndex(of: "/") {
+            s = String(s[..<slashIndex])
+        }
+
+        let parts = s.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
+        guard let host = parts.first, !host.isEmpty else { return nil }
+
+        var addr = in_addr()
+        return host.withCString { cStr -> String? in
+            if inet_pton(AF_INET, cStr, &addr) == 1 {
+                return String(host)
+            }
+            return nil
+        }
     }
 }
 

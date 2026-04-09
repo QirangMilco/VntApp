@@ -124,7 +124,23 @@ impl<Device: DeviceWrite> ClientPacketHandler<Device> {
         let source = net_packet.source();
         match ip_turn_packet::Protocol::from(net_packet.transport_protocol()) {
             ip_turn_packet::Protocol::Ipv4 => {
+                let packet_len = net_packet.data_len();
                 let mut ipv4 = IpV4Packet::new(net_packet.payload_mut())?;
+                if ipv4.protocol() == ipv4::protocol::Protocol::Icmp {
+                    let src = ipv4.source_ip();
+                    let dst = ipv4.destination_ip();
+                    let kind = icmp::IcmpPacket::new(ipv4.payload())
+                        .ok()
+                        .map(|p| p.kind());
+                    log::info!(
+                        "[iOS ICMP TRACE][client-in] route={:?} src={} dst={} kind={:?} len={}",
+                        route_key,
+                        src,
+                        dst,
+                        kind,
+                        packet_len
+                    );
+                }
                 match ipv4.protocol() {
                     ipv4::protocol::Protocol::Icmp => {
                         if ipv4.destination_ip() == destination {
@@ -191,6 +207,20 @@ impl<Device: DeviceWrite> ClientPacketHandler<Device> {
                             return Ok(());
                         }
                     }
+                }
+                if ipv4.protocol() == ipv4::protocol::Protocol::Icmp {
+                    let src = ipv4.source_ip();
+                    let dst = ipv4.destination_ip();
+                    let kind = icmp::IcmpPacket::new(ipv4.payload())
+                        .ok()
+                        .map(|p| p.kind());
+                    log::info!(
+                        "[iOS ICMP TRACE][client-write] src={} dst={} kind={:?} len={}",
+                        src,
+                        dst,
+                        kind,
+                        packet_len
+                    );
                 }
                 self.device.write(net_packet.payload())?;
             }

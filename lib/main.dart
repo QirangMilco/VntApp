@@ -141,6 +141,9 @@ class _HomePageState extends State<HomePage> with WindowListener {
   List<NetworkConfig> _configs = [];
   bool _connected = vntManager.hasConnection();
   bool rememberChoice = false;
+  Timer? _extensionLogPollTimer;
+  String _lastExtensionLogSnapshot = '';
+  int _extensionLogPollTicks = 0;
 
   @override
   void initState() {
@@ -273,6 +276,45 @@ class _HomePageState extends State<HomePage> with WindowListener {
     });
   }
 
+  void _stopExtensionLogPolling() {
+    _extensionLogPollTimer?.cancel();
+    _extensionLogPollTimer = null;
+    _extensionLogPollTicks = 0;
+  }
+
+  void _startExtensionLogPolling() {
+    if (!Platform.isIOS) {
+      return;
+    }
+    _stopExtensionLogPolling();
+    _lastExtensionLogSnapshot = '';
+    _extensionLogPollTicks = 0;
+    _extensionLogPollTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      _extensionLogPollTicks += 1;
+      try {
+        final extLog = await VntAppCall.readExtensionLog();
+        if (extLog != _lastExtensionLogSnapshot) {
+          var appended = extLog;
+          if (_lastExtensionLogSnapshot.isNotEmpty && extLog.startsWith(_lastExtensionLogSnapshot)) {
+            appended = extLog.substring(_lastExtensionLogSnapshot.length);
+          }
+          appended = appended.trim();
+          if (appended.isNotEmpty) {
+            debugPrint('iOS: ===== EXTENSION LOG DELTA START [tick=${_extensionLogPollTicks}] =====');
+            debugPrint(appended);
+            debugPrint('iOS: ===== EXTENSION LOG DELTA END =====');
+          }
+          _lastExtensionLogSnapshot = extLog;
+        }
+      } catch (e) {
+        debugPrint('iOS: readExtensionLog polling error: $e');
+      }
+      if (_extensionLogPollTicks >= 30) {
+        _stopExtensionLogPolling();
+      }
+    });
+  }
+
   Future<void> loadConnect() async {
     if (_configs.isEmpty) {
       return;
@@ -295,6 +337,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
 
   @override
   void dispose() {
+    _stopExtensionLogPolling();
     windowManager.removeListener(this);
     super.dispose();
   }
@@ -553,12 +596,14 @@ class _HomePageState extends State<HomePage> with WindowListener {
     receivePort.listen((msg) async {
       if (msg is String) {
         if (msg == 'success') {
+          _startExtensionLogPolling();
           if (onece) {
             onece = false;
             Navigator.of(context).popUntil((route) => route.isFirst);
             connectDetailPage(config);
           }
         } else if (msg == 'stop') {
+          _stopExtensionLogPolling();
           _closeVnt(itemKey);
           if (onece) {
             onece = false;
@@ -569,6 +614,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
           );
         }
       } else if (msg is RustErrorInfo) {
+        _stopExtensionLogPolling();
         if (onece) {
           //没成功就失败的，就断开不重试了
           onece = false;
