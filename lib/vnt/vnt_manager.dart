@@ -22,21 +22,6 @@ class VntBox {
     required this.networkConfig,
   });
   static Future<VntBox> create(NetworkConfig config, SendPort uiCall) async {
-    // 首先请求VPN权限（主要用于iOS平台）
-    if (Platform.isIOS) {
-      try {
-        debugPrint('在创建VPN连接前请求VPN权限');
-        final hasPermission = await VntAppCall.requestVpnPermission();
-        if (!hasPermission) {
-          debugPrint('未获得VPN权限，无法创建VPN连接');
-          throw Exception('VPN permission denied');
-        }
-      } catch (e) {
-        debugPrint('VPN权限请求失败: $e');
-        throw e;
-      }
-    }
-    
     var vntConfig = VntConfig(
         tap: false,
         token: config.token,
@@ -81,11 +66,26 @@ class VntBox {
     }, registerFn: (info) {
       // uiCall.send(info);
       return true;
-    }, generateTunFn: (info) async {
+    },     generateTunFn: (info) async {
       //创建vpn
       try {
-        int fd = await VntAppCall.startVpn(info, vntConfig.mtu ?? 1400);
-        return fd;
+        if (Platform.isAndroid) {
+          int fd = await VntAppCall.startVpn(info, vntConfig.mtu ?? 1400);
+          return fd;
+        } else if (Platform.isIOS) {
+          // iOS: Start VPN via Network Extension (NEPacketTunnelProvider)
+          // The Extension creates the TUN interface and returns fd via shared UserDefaults
+          debugPrint('iOS TUN: Starting VPN via Network Extension...');
+          debugPrint('iOS TUN: virtualIp=${info.virtualIp}, netmask=${info.virtualNetmask}, gateway=${info.virtualGateway}');
+          int fd = await VntAppCall.startVpn(info, vntConfig.mtu ?? 1400, tunnelServerAddress: config.serverAddress);
+          if (fd > 0) {
+            debugPrint('iOS TUN: Got TUN fd=$fd from Network Extension');
+          } else {
+            debugPrint('iOS TUN: Failed to get TUN fd, got fd=$fd');
+          }
+          return fd;
+        }
+        return 0;
       } catch (e) {
         debugPrint('创建vpn异常 $e');
         uiCall.send('stop');
@@ -105,11 +105,14 @@ class VntBox {
   }
 
   Future<void> close() async {
-    vntApi.stop();
-    // 为iOS平台添加停止VPN逻辑
     if (Platform.isAndroid || Platform.isIOS) {
-      await VntAppCall.stopVpn();
+      try {
+        await VntAppCall.stopVpn();
+      } catch (e) {
+        debugPrint('stopVpn error: $e');
+      }
     }
+    vntApi.stop();
   }
 
   bool isClosed() {
@@ -241,8 +244,7 @@ class VntManager {
 typedef StartCallback = Future<void> Function();
 
 class VntAppCall {
-  // 使用新的MethodChannel名称以匹配iOS端设置
-  static MethodChannel channel = const MethodChannel('com.vntapp/vpn');
+  static MethodChannel channel = const MethodChannel('top.wherewego.vnt/vpn');
   static StartCallback startCall = () async {};
   static void setStartCall(StartCallback startCall) {
     VntAppCall.startCall = startCall;
@@ -269,52 +271,86 @@ class VntAppCall {
     });
   }
 
-  static Future<int> startVpn(RustDeviceConfig info, int mtu) async {
-    try {
-      return await VntAppCall.channel
-          .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
-    } catch (e) {
-      debugPrint('启动VPN失败: $e');
-      throw e;
+  static Future<int> startVpn(RustDeviceConfig info, int mtu, {String tunnelServerAddress = ''}) async {
+    final map = rustDeviceConfigToMap(info, mtu);
+    if (tunnelServerAddress.isNotEmpty) {
+      map['tunnelServerAddress'] = tunnelServerAddress;
     }
+    return await VntAppCall.channel.invokeMethod('startVpn', map);
   }
 
   static Future<void> moveTaskToBack() async {
-    if (Platform.isAndroid) {
-      return await VntAppCall.channel.invokeMethod('moveTaskToBack');
-    }
-    // iOS平台不需要此功能
+    return await VntAppCall.channel.invokeMethod('moveTaskToBack');
   }
 
   static Future<bool> isTileStart() async {
-    if (Platform.isAndroid) {
-      return await VntAppCall.channel.invokeMethod('isTileStart');
-    }
-    // iOS平台返回默认值
-    return false;
+    return await VntAppCall.channel.invokeMethod('isTileStart');
   }
 
   static Future<void> stopVpn() async {
+    return await VntAppCall.channel.invokeMethod('stopVpn');
+  }
+
+  /// Check if NEVPNConnection is still connected at the system level
+  /// Returns status string: "connected", "disconnected", "connecting", etc.
+  static Future<String> checkVpnStatus() async {
     try {
-      return await VntAppCall.channel.invokeMethod('stopVpn');
+      final result = await VntAppCall.channel.invokeMethod('checkVpnStatus');
+      return result?.toString() ?? 'unknown';
     } catch (e) {
-      debugPrint('停止VPN失败: $e');
-      throw e;
+      debugPrint('checkVpnStatus error: $e');
+      return 'unknown';
     }
   }
 
-  /// 请求VPN权限（主要用于iOS平台）
-  static Future<bool> requestVpnPermission() async {
+  /// Stop VPN at the system level if it's connected (used to clean up stale connections)
+  static Future<bool> stopVpnIfConnected() async {
     try {
-      if (Platform.isIOS) {
-        debugPrint('请求VPN权限');
-        return await VntAppCall.channel.invokeMethod('requestVpnPermission');
-      }
-      // Android平台默认返回true
-      return true;
+      final result = await VntAppCall.channel.invokeMethod('stopVpnIfConnected');
+      return result as bool? ?? false;
     } catch (e) {
-      debugPrint('请求VPN权限失败: $e');
-      throw e;
+      debugPrint('stopVpnIfConnected error: $e');
+      return false;
+    }
+  }
+
+  /// Read the Extension log file from App Group shared container
+  static Future<String> readExtensionLog() async {
+    try {
+      final result = await VntAppCall.channel.invokeMethod('readExtensionLog');
+      return result?.toString() ?? '(no log)';
+    } catch (e) {
+      return 'Failed to read extension log: $e';
+    }
+  }
+
+  /// Read the App-side startup log (survives crashes)
+  static Future<String> readAppLog() async {
+    try {
+      final result = await VntAppCall.channel.invokeMethod('readAppLog');
+      return result?.toString() ?? '(no app log)';
+    } catch (e) {
+      return 'Failed to read app log: $e';
+    }
+  }
+
+  /// Check if previous session crashed (crash flag file exists)
+  static Future<bool> checkCrashFlag() async {
+    try {
+      final result = await VntAppCall.channel.invokeMethod('checkCrashFlag');
+      return result as bool? ?? false;
+    } catch (e) {
+      debugPrint('checkCrashFlag error: $e');
+      return false;
+    }
+  }
+
+  /// Clear the crash flag after reading it
+  static Future<void> clearCrashFlag() async {
+    try {
+      await VntAppCall.channel.invokeMethod('clearCrashFlag');
+    } catch (e) {
+      debugPrint('clearCrashFlag error: $e');
     }
   }
 
@@ -324,6 +360,7 @@ class VntAppCall {
       'virtualIp': deviceConfig.virtualIp,
       'virtualNetmask': deviceConfig.virtualNetmask,
       'virtualGateway': deviceConfig.virtualGateway,
+      'virtualNetwork': deviceConfig.virtualNetwork,
       'mtu': mtu,
       'externalRoute': deviceConfig.externalRoute.map((v) {
         return {
@@ -331,6 +368,7 @@ class VntAppCall {
           'netmask': v.$2,
         };
       }).toList(),
+      'dnsServers': [], // DNS is configured by the Extension via NEPacketTunnelNetworkSettings
     };
   }
 }
