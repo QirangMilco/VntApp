@@ -194,7 +194,7 @@ impl VntApi {
             punch_model,
             vnt_config.ports,
             vnt_config.first_latency,
-            #[cfg(not(target_os = "android"))]
+            #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
             vnt_config.device_name,
             use_channel_type,
             vnt_config.packet_loss_rate,
@@ -203,7 +203,8 @@ impl VntApi {
             compressor,
             true,
             vnt_config.allow_wire_guard,
-            local_ipv4,
+            local_ipv4.map(|v| v.to_string()),
+            false,
         )?;
         Ok(Self {
             vnt: Vnt::new(conf, call)?,
@@ -700,6 +701,8 @@ impl From<ErrorType> for RustErrorType {
             ErrorType::IpAlreadyExists => RustErrorType::IpAlreadyExists,
             ErrorType::InvalidIp => RustErrorType::InvalidIp,
             ErrorType::LocalIpExists => RustErrorType::LocalIpExists,
+            ErrorType::FailedToCrateDevice => RustErrorType::Unknown,
+            ErrorType::Warn => RustErrorType::Unknown,
             ErrorType::Unknown => RustErrorType::Unknown,
         }
     }

@@ -69,22 +69,25 @@ Future<void> main() async {
 
   await RustLib.init();
 
-  // 初始化日志系统，所有平台统一使用log4rs
+  // 初始化日志系统
+  // iOS 真机上曾出现启动阶段卡在 Rust 日志初始化，导致首屏白屏。
+  // 这里改为：iOS 跳过 Rust 文件日志初始化，仅保留控制台日志；其他平台保持原行为。
   try {
-    // 使用统一的日志路径工具类获取日志目录
     final logDir = await LogUtils.getLogDirectory();
     debugPrint('日志目录: $logDir');
 
-    // 确保日志目录存在
     final logsDirectory = Directory(logDir);
     if (!await logsDirectory.exists()) {
       await logsDirectory.create(recursive: true);
       debugPrint('创建日志目录: $logDir');
     }
 
-    // 调用Rust层初始化日志
-    initLogWithPath(logDir: logDir);
-    debugPrint('日志系统初始化成功，日志目录: $logDir');
+    if (!Platform.isIOS) {
+      initLogWithPath(logDir: logDir);
+      debugPrint('日志系统初始化成功，日志目录: $logDir');
+    } else {
+      debugPrint('iOS 启动阶段跳过 Rust 文件日志初始化');
+    }
   } catch (e) {
     debugPrint('初始化日志系统失败: $e');
   }

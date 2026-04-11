@@ -29,7 +29,7 @@ public class MainActivity extends FlutterActivity {
     private static final int CREATE_FILE_REQUEST_CODE = 2;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 3;
 
-    private static final String FILE_CHANNEL = "top.wherewego.vnt/file";
+    private static final String FILE_CHANNEL = "vnt.app/file";
     private MethodChannel fileChannel;
     private String pendingFilePath;
     private MethodChannel.Result pendingFileResult;

@@ -1207,7 +1207,6 @@ dependencies = [
 [[package]]
 name = "packet"
 version = "0.1.0"
-source = "git+https://github.com/lmq8267/vnt-Redir.git?branch=main#ecda61a285cd66c144124bd41297bcbdf7c5acd6"
 dependencies = [
  "byteorder",
 ]
@@ -1559,6 +1558,7 @@ dependencies = [
  "log",
  "log4rs",
  "serde",
+ "serde_json",
  "thunk-rs",
  "tokio",
  "vnt",
@@ -2128,7 +2128,6 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vnt"
 version = "1.2.17"
-source = "git+https://github.com/lmq8267/vnt-Redir.git?branch=main#ecda61a285cd66c144124bd41297bcbdf7c5acd6"
 dependencies = [
  "aes",
  "aes-gcm",

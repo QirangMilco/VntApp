@@ -9,6 +9,7 @@ crate-type = ["staticlib", "cdylib"]
 [dependencies]
 
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 flutter_rust_bridge = "=2.1.0"
 vnt = { git = "https://github.com/lmq8267/vnt-Redir.git", branch = "main", features = ["ring-cipher", "wss"] }
 anyhow = "1.0.82"
@@ -16,6 +17,9 @@ tokio = { version = "1.37.0", features = ["full"] }
 
 log = "0.4.17"
 log4rs = "1.2.0"
+
+[patch."https://github.com/lmq8267/vnt-Redir.git"]
+vnt = { path = "vendor/vnt-redir/vnt" }
 
 [target.'cfg(windows)'.build-dependencies]
 thunk-rs = { version = "0.3.3", features = ["win7"] }

@@ -48,7 +48,7 @@ class StatisticsChartState extends State<StatisticsChart> {
   }
 
   void _updateBarChart() {
-    barChartDataList = widget.vntBox.vntApi.streamAll();
+    barChartDataList = widget.vntBox.vntApi?.streamAll() ?? const [];
     uploadTotal = widget.vntBox.upStream();
     downloadTotal = widget.vntBox.downStream();
     for (var item in barChartDataList) {
@@ -81,10 +81,10 @@ class StatisticsChartState extends State<StatisticsChart> {
 
   void _chartBData(int index) {
     ip = barChartDataList[index].$1;
-    upList = widget.vntBox.vntApi.upStreamLine(ip: ip);
-    downList = widget.vntBox.vntApi.downStreamLine(ip: ip);
-    ipUpload = widget.vntBox.vntApi.ipUpStreamTotal(ip: ip);
-    ipDownload = widget.vntBox.vntApi.ipDownStreamTotal(ip: ip);
+    upList = widget.vntBox.vntApi?.upStreamLine(ip: ip) ?? Uint64List(0);
+    downList = widget.vntBox.vntApi?.downStreamLine(ip: ip) ?? Uint64List(0);
+    ipUpload = widget.vntBox.vntApi?.ipUpStreamTotal(ip: ip) ?? '0 bytes';
+    ipDownload = widget.vntBox.vntApi?.ipDownStreamTotal(ip: ip) ?? '0 bytes';
     var lineMaxTmp = 0.0;
     for (var item in upList) {
       var tmp = item.toDouble();

@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -41,3 +43,21 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Craft Agent local workspace artifacts (not for VCS)
+/sessions/
+/.claude-plugin/
+/labels/
+/statuses/
+/events.jsonl
+/views.json
+/config.json
+.craft-agents/
+.crystal-agent/
+
+# Local build caches / vendored build outputs
+/rust/vnt-fork/target/
+/ios/build/
+
+# iOS local private build config (contains identifiers/signing overrides)
+/ios/Flutter/Private.xcconfig

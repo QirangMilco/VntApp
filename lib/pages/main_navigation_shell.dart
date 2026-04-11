@@ -604,6 +604,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       children: [
         // 0: 仪表盘
         DashboardPage(
+          isActive: _selectedIndex == 0,
           onNavigateToConfig: () => setState(() => _selectedIndex = 2),
           onNavigateToSettings: () => setState(() => _selectedIndex = 3),
           onDisconnect: () async {
@@ -652,6 +653,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         ),
         // 1: 房间
         RoomPage(
+          isActive: _selectedIndex == 1,
           selectedConfig: _selectedConfig,
           onDisconnect: _selectedConfig != null
               ? () {

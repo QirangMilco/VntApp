@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -43,7 +44,6 @@ class MacOSPrivilegeManager {
         return false;
       }
 
-
       // 构建 AppleScript 脚本
       // 如果需要显示提示，添加友好的提示信息
       String script;
@@ -58,7 +58,8 @@ end tell
 ''';
       } else {
         // 直接请求权限，不显示额外提示
-        script = 'do shell script "\\"$executablePath\\" > /dev/null 2>&1 &" with administrator privileges';
+        script =
+            'do shell script "\\"$executablePath\\" > /dev/null 2>&1 &" with administrator privileges';
       }
 
       final result = await Process.run('osascript', ['-e', script]);
@@ -124,14 +125,28 @@ end tell
 final VntManager vntManager = VntManager();
 
 class VntBox {
-  final VntApi vntApi;
+  final VntApi? vntApi;
   final VntConfig vntConfig;
   final NetworkConfig networkConfig;
+  bool _closed = false;
+  Map<String, dynamic>? _iosStatusCache;
+  bool _iosStatusRefreshing = false;
+  Timer? _iosDebugPollTimer;
+  String _lastIosDebugEvents = '';
+
   VntBox({
     required this.vntApi,
     required this.vntConfig,
     required this.networkConfig,
-  });
+    Map<String, dynamic>? iosStatus,
+  }) : _iosStatusCache = iosStatus {
+    if (Platform.isIOS && vntApi == null) {
+      _lastIosDebugEvents =
+          (iosStatus?['extensionDebugEvents'] as List?)?.join(' || ') ?? '';
+      _startIosDebugPolling();
+    }
+  }
+
   static Future<VntBox> create(NetworkConfig config, SendPort uiCall) async {
     var vntConfig = VntConfig(
         tap: false,
@@ -165,6 +180,12 @@ class VntBox {
         compressor: config.compressor.isEmpty ? 'none' : config.compressor,
         allowWireGuard: config.allowWg,
         localIpv4: config.localIpv4.isEmpty ? null : config.localIpv4);
+
+    if (Platform.isIOS) {
+      return _createForIos(
+          config: config, vntConfig: vntConfig, uiCall: uiCall);
+    }
+
     var vntCall = VntApiCallback(successFn: () {
       uiCall.send('success');
     }, createTunFn: (info) {
@@ -172,15 +193,13 @@ class VntBox {
     }, connectFn: (info) {
       uiCall.send(info);
     }, handshakeFn: (info) {
-      // uiCall.send(info);
       return true;
     }, registerFn: (info) {
-      // uiCall.send(info);
       return true;
     }, generateTunFn: (info) async {
-      //创建vpn
       try {
-        int fd = await VntAppCall.startVpn(info, vntConfig.mtu ?? 1400);
+        int fd =
+            await VntAppCall.startVpn(info, vntConfig.mtu ?? 1400, vntConfig);
         return fd;
       } catch (e) {
         debugPrint('创建vpn异常 $e');
@@ -195,30 +214,212 @@ class VntBox {
     }, stopFn: () {
       uiCall.send('stop');
     });
-    var vntApi = await vntInit(vntConfig: vntConfig, call: vntCall);
 
+    var vntApi = await vntInit(vntConfig: vntConfig, call: vntCall);
     return VntBox(vntApi: vntApi, vntConfig: vntConfig, networkConfig: config);
   }
 
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static Future<VntBox> _createForIos({
+    required NetworkConfig config,
+    required VntConfig vntConfig,
+    required SendPort uiCall,
+  }) async {
+    final deviceConfig = VntAppCall.buildIosDeviceConfig(config);
+    final fd = await VntAppCall.startVpn(
+        deviceConfig, vntConfig.mtu ?? 1400, vntConfig);
+    if (fd <= 0) {
+      throw Exception('iOS VPN 启动失败: fd=$fd');
+    }
+
+    const maxChecks = 40; // 40 * 250ms = 10s
+    var sentProbe = false;
+    for (var i = 0; i < maxChecks; i++) {
+      await Future.delayed(const Duration(milliseconds: 250));
+      final status = await VntAppCall.getVpnStatus();
+      if (status == null) {
+        continue;
+      }
+
+      final vpnStatus = (status['vpnStatus'] ?? '').toString();
+      final vpnStatusRaw = _toInt(status['vpnStatusRaw']);
+      final runtimeState = (status['runtimeState'] ?? '').toString();
+      final extensionState = (status['extensionState'] ?? '').toString();
+      final extensionMessage = status['extensionMessage'];
+      final packetsFromSystem = _toInt(status['extensionPacketsFromSystem']);
+      final packetsToSystem = _toInt(status['extensionPacketsToSystem']);
+      final lastErrorCode = _toInt(status['extensionLastErrorCode']);
+      final extensionVirtualIp = status['extensionVirtualIp'];
+      final routeCount = _toInt(status['extensionRouteCount']);
+      final extensionRustLastError = status['extensionRustLastError'];
+      final extensionRustLastErrorCode =
+          _toInt(status['extensionRustLastErrorCode']);
+      final extensionAppliedVirtualIp = status['extensionAppliedVirtualIp'];
+      final extensionAppliedVirtualNetmask =
+          status['extensionAppliedVirtualNetmask'];
+      final extensionAppliedVirtualGateway =
+          status['extensionAppliedVirtualGateway'];
+      final extensionDebugEvents =
+          (status['extensionDebugEvents'] as List?)?.join(' || ');
+      final lastDisconnectError = status['lastDisconnectError'];
+      final lastDisconnectErrorDomain = status['lastDisconnectErrorDomain'];
+      final lastDisconnectErrorCode = _toInt(status['lastDisconnectErrorCode']);
+
+      if (!sentProbe &&
+          vpnStatus == 'disconnected' &&
+          runtimeState == 'starting') {
+        sentProbe = true;
+        try {
+          await VntAppCall.getVpnStatus();
+          debugPrint('[iOS VPN] sent warmup probe while disconnected/starting');
+        } catch (_) {}
+      }
+
+      debugPrint(
+        '[iOS VPN] status[$i/$maxChecks]: vpnStatus=$vpnStatus(raw=$vpnStatusRaw), runtimeState=$runtimeState, extensionState=$extensionState, msg=$extensionMessage, inPkts=$packetsFromSystem, outPkts=$packetsToSystem, lastErr=$lastErrorCode, extVip=$extensionVirtualIp, routeCount=$routeCount, rustErr=$extensionRustLastError, rustErrCode=$extensionRustLastErrorCode, appliedVip=$extensionAppliedVirtualIp, appliedMask=$extensionAppliedVirtualNetmask, appliedGw=$extensionAppliedVirtualGateway, debugEvents=$extensionDebugEvents, lastDisconnect=$lastDisconnectError, lastDisconnectDomain=$lastDisconnectErrorDomain, lastDisconnectCode=$lastDisconnectErrorCode',
+      );
+
+      if (runtimeState == 'error' || extensionState == 'error') {
+        throw Exception(
+            'iOS VPN 扩展启动失败: vpnStatus=$vpnStatus runtime=$runtimeState ext=$extensionState msg=$extensionMessage code=$lastErrorCode');
+      }
+
+      // iOS 上 runtimeState 来自共享状态，可能因写入时序滞后；
+      // 连接成功以系统 VPN 状态 + 扩展运行态为准。
+      if ((vpnStatus == 'connected' || vpnStatus == 'reasserting') &&
+          extensionState == 'running') {
+        uiCall.send('success');
+        return VntBox(
+            vntApi: null,
+            vntConfig: vntConfig,
+            networkConfig: config,
+            iosStatus: status);
+      }
+    }
+
+    final latest = await VntAppCall.getVpnStatus();
+    throw Exception('iOS VPN 等待扩展就绪超时: ${latest ?? {}}');
+  }
+
   Future<void> close() async {
-    vntApi.stop();
+    if (_closed) {
+      return;
+    }
+    _closed = true;
+    _iosDebugPollTimer?.cancel();
+    _iosDebugPollTimer = null;
+
+    if (Platform.isIOS) {
+      await VntAppCall.stopVpn();
+      return;
+    }
+
+    vntApi?.stop();
     if (Platform.isAndroid) {
       await VntAppCall.stopVpn();
     }
   }
 
   bool isClosed() {
-    return vntApi.isStopped();
+    if (_closed) {
+      return true;
+    }
+    return vntApi?.isStopped() ?? false;
   }
 
   NetworkConfig? getNetConfig() {
     return networkConfig;
   }
 
-  Map<String, dynamic> currentDevice() {
-    var currentDevice = vntApi.currentDevice();
+  void _refreshIosStatusAsync() {
+    if (!Platform.isIOS || vntApi != null || _closed || _iosStatusRefreshing) {
+      return;
+    }
+    _iosStatusRefreshing = true;
+    unawaited(VntAppCall.getVpnStatus().then((status) {
+      if (status != null) {
+        _iosStatusCache = status;
+        final debugEvents =
+            (status['extensionDebugEvents'] as List?)?.join(' || ') ?? '';
+        if (debugEvents.isNotEmpty && debugEvents != _lastIosDebugEvents) {
+          _lastIosDebugEvents = debugEvents;
+          debugPrint('[iOS VPN] extension debug: $debugEvents');
+        }
+      }
+    }).whenComplete(() {
+      _iosStatusRefreshing = false;
+    }));
+  }
 
-    var natInfo = vntApi.natInfo();
+  void _startIosDebugPolling() {
+    if (!Platform.isIOS || vntApi != null || _closed) {
+      return;
+    }
+    _iosDebugPollTimer?.cancel();
+    _iosDebugPollTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_closed) {
+        _iosDebugPollTimer?.cancel();
+        _iosDebugPollTimer = null;
+        return;
+      }
+      _refreshIosStatusAsync();
+    });
+  }
+
+  Map<String, dynamic> currentDevice() {
+    if (vntApi == null) {
+      _refreshIosStatusAsync();
+      final status = _iosStatusCache;
+
+      final virtualIp = (status?['extensionVirtualIp'] as String?)?.trim();
+      final virtualNetmask =
+          (status?['extensionVirtualNetmask'] as String?)?.trim();
+      final virtualGateway =
+          (status?['extensionVirtualGateway'] as String?)?.trim();
+      final virtualNetwork =
+          (status?['extensionVirtualNetwork'] as String?)?.trim();
+      final connectServer =
+          (status?['extensionTunnelServerAddress'] as String?)?.trim();
+      final currentStatus =
+          (status?['extensionCurrentStatus'] as String?)?.trim();
+
+      return {
+        'virtualIp':
+            (virtualIp == null || virtualIp.isEmpty) ? 'N/A' : virtualIp,
+        'virtualNetmask': (virtualNetmask == null || virtualNetmask.isEmpty)
+            ? 'N/A'
+            : virtualNetmask,
+        'virtualGateway': (virtualGateway == null || virtualGateway.isEmpty)
+            ? 'N/A'
+            : virtualGateway,
+        'virtualNetwork': (virtualNetwork == null || virtualNetwork.isEmpty)
+            ? 'N/A'
+            : virtualNetwork,
+        'broadcastIp': '',
+        'connectServer': (connectServer == null || connectServer.isEmpty)
+            ? vntConfig.serverAddressStr
+            : connectServer,
+        'status': _closed
+            ? 'Stopped'
+            : ((currentStatus == null || currentStatus.isEmpty)
+                ? 'Connected'
+                : currentStatus),
+        'publicIps': <String>[],
+        'natType': 'Unknown',
+        'localIpv4':
+            networkConfig.localIpv4.isEmpty ? null : networkConfig.localIpv4,
+        'ipv6': null,
+      };
+    }
+
+    var currentDevice = vntApi!.currentDevice();
+    var natInfo = vntApi!.natInfo();
     return {
       'virtualIp': currentDevice.virtualIp,
       'virtualNetmask': currentDevice.virtualNetmask,
@@ -235,27 +436,84 @@ class VntBox {
   }
 
   List<RustPeerClientInfo> peerDeviceList() {
-    return vntApi.deviceList();
+    if (vntApi != null) {
+      return vntApi!.deviceList();
+    }
+
+    if (!Platform.isIOS) {
+      return const [];
+    }
+
+    _refreshIosStatusAsync();
+    final raw = _iosStatusCache?['extensionPeerDevices'];
+    if (raw is! List) {
+      return const [];
+    }
+
+    final result = <RustPeerClientInfo>[];
+    for (final item in raw) {
+      if (item is! Map) continue;
+      final map = Map<String, dynamic>.from(item as Map);
+      final vip = (map['virtualIp'] ?? '').toString();
+      if (vip.isEmpty) continue;
+      result.add(RustPeerClientInfo(
+        virtualIp: vip,
+        name: (map['name'] ?? '').toString(),
+        status: (map['status'] ?? '').toString(),
+        clientSecret: map['clientSecret'] == true,
+      ));
+    }
+    return result;
   }
 
   List<(String, List<RustRoute>)> routeList() {
-    return vntApi.routeList();
+    return vntApi?.routeList() ?? const [];
   }
 
   RustRoute? route(String ip) {
-    return vntApi.route(ip: ip);
+    if (vntApi != null) {
+      return vntApi!.route(ip: ip);
+    }
+
+    if (!Platform.isIOS) {
+      return null;
+    }
+
+    _refreshIosStatusAsync();
+    final raw = _iosStatusCache?['extensionPeerDevices'];
+    if (raw is! List) {
+      return null;
+    }
+
+    for (final item in raw) {
+      if (item is! Map) continue;
+      final map = Map<String, dynamic>.from(item as Map);
+      final vip = (map['virtualIp'] ?? '').toString();
+      if (vip != ip) continue;
+      final route = map['route'];
+      if (route is! Map) return null;
+      final routeMap = Map<String, dynamic>.from(route as Map);
+      return RustRoute(
+        protocol: (routeMap['protocol'] ?? 'Unknown').toString(),
+        addr: (routeMap['addr'] ?? '').toString(),
+        metric: _toInt(routeMap['metric']),
+        rt: _toInt(routeMap['rt']),
+      );
+    }
+
+    return null;
   }
 
   RustNatInfo? peerNatInfo(String ip) {
-    return vntApi.peerNatInfo(ip: ip);
+    return vntApi?.peerNatInfo(ip: ip);
   }
 
   String downStream() {
-    return vntApi.downStream();
+    return vntApi?.downStream() ?? '0 bytes';
   }
 
   String upStream() {
-    return vntApi.upStream();
+    return vntApi?.upStream() ?? '0 bytes';
   }
 }
 
@@ -295,7 +553,8 @@ class VntManager {
 
       // macOS 权限检查：如果没有权限，请求重新启动
       if (Platform.isMacOS) {
-        final needsRestart = await MacOSPrivilegeManager.checkAndRequestPrivilege();
+        final needsRestart =
+            await MacOSPrivilegeManager.checkAndRequestPrivilege();
         if (needsRestart) {
           // 已经开始重启流程，抛出异常通知 UI
           throw Exception('需要管理员权限，app 正在重新启动...');
@@ -363,7 +622,7 @@ class VntManager {
   }
 
   bool supportMultiple() {
-    return !Platform.isAndroid;
+    return !Platform.isAndroid && !Platform.isIOS;
   }
 
   VntBox? getOne() {
@@ -377,7 +636,7 @@ class VntManager {
 typedef StartCallback = Future<void> Function(String? configKey);
 
 class VntAppCall {
-  static MethodChannel channel = const MethodChannel('top.wherewego.vnt/vpn');
+  static MethodChannel channel = const MethodChannel('vnt.app/vpn');
   static StartCallback startCall = (String? configKey) async {};
   static void setStartCall(StartCallback startCall) {
     VntAppCall.startCall = startCall;
@@ -444,9 +703,99 @@ class VntAppCall {
     };
   }
 
-  static Future<int> startVpn(RustDeviceConfig info, int mtu) async {
-    return await VntAppCall.channel
-        .invokeMethod('startVpn', rustDeviceConfigToMap(info, mtu));
+  static Future<int> startVpn(
+      RustDeviceConfig info, int mtu, VntConfig vntConfig) async {
+    final payload = rustDeviceConfigToMap(info, mtu, vntConfig);
+    final vntMap = vntConfigToMap(vntConfig);
+    debugPrint(
+      '[iOS VPN] startVpn: ip=${info.virtualIp}, netmask=${info.virtualNetmask}, gateway=${info.virtualGateway}, routeCount=${info.externalRoute.length}, server=${vntConfig.serverAddressStr}, enableIpv6OverVnt=${vntMap['enableIpv6OverVnt']}, vntConfigJsonLen=${(payload['vntConfigJson'] as String?)?.length ?? 0}',
+    );
+    return await VntAppCall.channel.invokeMethod('startVpn', payload);
+  }
+
+  static RustDeviceConfig buildIosDeviceConfig(NetworkConfig config) {
+    final ip = config.virtualIPv4.isEmpty ? '10.26.0.2' : config.virtualIPv4;
+    final netmask = _defaultNetmask(config.virtualIPv4);
+    final gateway = _deriveGateway(ip);
+    final network = _deriveNetwork(ip, netmask);
+    final routes = _buildExternalRoutes(config.outIps);
+
+    if (config.virtualIPv4.isEmpty) {
+      debugPrint(
+          '[iOS VPN] 警告: 配置未填写 virtualIPv4，当前使用回退地址 $ip。若服务端分配地址与此不一致，可能导致互联失败。');
+    }
+    debugPrint(
+      '[iOS VPN] 组装设备配置: config=${config.configName}, rawVirtualIp=${config.virtualIPv4}, ip=$ip, netmask=$netmask, gateway=$gateway, network=$network, routeCount=${routes.length}, rawOutIps=${config.outIps.length}',
+    );
+
+    return RustDeviceConfig(
+      virtualIp: ip,
+      virtualNetmask: netmask,
+      virtualGateway: gateway,
+      virtualNetwork: network,
+      externalRoute: routes,
+    );
+  }
+
+  static String _defaultNetmask(String virtualIp) {
+    if (virtualIp.isEmpty) {
+      return '255.255.255.0';
+    }
+    final parts = virtualIp.split('.');
+    if (parts.length != 4) {
+      return '255.255.255.0';
+    }
+    return '255.255.255.0';
+  }
+
+  static String _deriveGateway(String ip) {
+    final parts = ip.split('.');
+    if (parts.length != 4) {
+      return '10.26.0.1';
+    }
+    return '${parts[0]}.${parts[1]}.${parts[2]}.1';
+  }
+
+  static String _deriveNetwork(String ip, String netmask) {
+    final ipSeg = ip.split('.');
+    final maskSeg = netmask.split('.');
+    if (ipSeg.length != 4 || maskSeg.length != 4) {
+      return '10.26.0.0';
+    }
+
+    final network = List<int>.generate(4, (index) {
+      final ipPart = int.tryParse(ipSeg[index]) ?? 0;
+      final maskPart = int.tryParse(maskSeg[index]) ?? 0;
+      return ipPart & maskPart;
+    });
+    return '${network[0]}.${network[1]}.${network[2]}.${network[3]}';
+  }
+
+  static List<(String, String)> _buildExternalRoutes(List<String> outIps) {
+    // iOS 下当 outIps 为空时，不应默认下发 0.0.0.0/0。
+    // 否则会把控制面（server/stun）流量也导入隧道，形成回环，表现为连接后互不可见。
+    if (outIps.isEmpty) {
+      return const [];
+    }
+
+    final routes = <(String, String)>[];
+    for (final item in outIps) {
+      final pair = item.split('/');
+      if (pair.length != 2) {
+        continue;
+      }
+      final destination = pair[0];
+      final prefix = int.tryParse(pair[1]);
+      if (prefix == null || prefix < 0 || prefix > 32) {
+        continue;
+      }
+      final mask = prefix == 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF;
+      final netmask =
+          '${(mask >> 24) & 0xFF}.${(mask >> 16) & 0xFF}.${(mask >> 8) & 0xFF}.${mask & 0xFF}';
+      routes.add((destination, netmask));
+    }
+
+    return routes;
   }
 
   static Future<void> moveTaskToBack() async {
@@ -465,9 +814,25 @@ class VntAppCall {
     return await VntAppCall.channel.invokeMethod('stopVpn');
   }
 
+  static Future<Map<String, dynamic>?> getVpnStatus() async {
+    try {
+      final status = await VntAppCall.channel.invokeMethod('getVpnStatus');
+      if (status is Map) {
+        return Map<String, dynamic>.from(status);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[iOS VPN] getVpnStatus 调用失败: $e');
+      return null;
+    }
+  }
+
   /// 更新磁贴和小组件状态
   /// @param isConnected 是否已连接
   static Future<void> updateWidgetAndTile(bool isConnected) async {
+    if (!Platform.isAndroid) {
+      return;
+    }
     try {
       await VntAppCall.channel.invokeMethod('updateWidgetAndTile', {
         'isConnected': isConnected,
@@ -479,18 +844,54 @@ class VntAppCall {
   }
 
   static Map<String, dynamic> rustDeviceConfigToMap(
-      RustDeviceConfig deviceConfig, int mtu) {
+      RustDeviceConfig deviceConfig, int mtu, VntConfig vntConfig) {
     return {
       'virtualIp': deviceConfig.virtualIp,
       'virtualNetmask': deviceConfig.virtualNetmask,
       'virtualGateway': deviceConfig.virtualGateway,
+      'virtualNetwork': deviceConfig.virtualNetwork,
+      'virtualIpAutoAssigned': vntConfig.ip == null,
       'mtu': mtu,
+      'dnsServers': vntConfig.nameServers,
+      'tunnelServerAddress': vntConfig.serverAddressStr,
       'externalRoute': deviceConfig.externalRoute.map((v) {
         return {
           'destination': v.$1,
           'netmask': v.$2,
         };
       }).toList(),
+      'vntConfigJson': jsonEncode(vntConfigToMap(vntConfig)),
+    };
+  }
+
+  static Map<String, dynamic> vntConfigToMap(VntConfig config) {
+    return {
+      'token': config.token,
+      'deviceId': config.deviceId,
+      'name': config.name,
+      'serverAddressStr': config.serverAddressStr,
+      'nameServers': config.nameServers,
+      'stunServer': config.stunServer,
+      'inIps': config.inIps.map((v) => [v.$1, v.$2, v.$3]).toList(),
+      'outIps': config.outIps.map((v) => [v.$1, v.$2]).toList(),
+      'password': config.password,
+      'mtu': config.mtu,
+      'ip': config.ip,
+      'noProxy': config.noProxy,
+      'serverEncrypt': config.serverEncrypt,
+      'cipherModel': config.cipherModel,
+      'finger': config.finger,
+      'punchModel': config.punchModel,
+      'ports': config.ports?.toList(),
+      'firstLatency': config.firstLatency,
+      'useChannelType': config.useChannelType,
+      'packetLossRate': config.packetLossRate,
+      'packetDelay': config.packetDelay,
+      'portMappingList': config.portMappingList,
+      'compressor': config.compressor,
+      'allowWireGuard': config.allowWireGuard,
+      'localIpv4': config.localIpv4,
+      'enableIpv6OverVnt': false,
     };
   }
 }

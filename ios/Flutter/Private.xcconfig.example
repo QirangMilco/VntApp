@@ -1,0 +1,7 @@
+// Copy this file to Private.xcconfig (gitignored) and fill your real values.
+// This file overrides placeholder values from Debug.xcconfig / Release.xcconfig.
+
+APP_BUNDLE_ID = com.yourcompany.vntapp
+APP_EXTENSION_BUNDLE_ID = com.yourcompany.vntapp.tunnel-extension
+TEST_BUNDLE_ID = $(APP_BUNDLE_ID).RunnerTests
+APP_GROUP_ID = group.com.yourcompany.vntapp.shared

@@ -29,7 +29,7 @@ A new Flutter FFI plugin project.
   s.script_phase = {
     :name => 'Build Rust library',
     # First argument is relative path to the `rust` folder, second is name of rust library
-    :script => 'sh "$PODS_TARGET_SRCROOT/../cargokit/build_pod.sh" ../../rust rust_lib_vnt_app',
+    :script => 'if [ "$PLATFORM_NAME" = "iphoneos" ]; then export RUSTFLAGS="${RUSTFLAGS} -C link-arg=-target -C link-arg=arm64-apple-ios13.0"; else case "$ARCHS" in *x86_64*) export RUSTFLAGS="${RUSTFLAGS} -C link-arg=-target -C link-arg=x86_64-apple-ios13.0-simulator" ;; *) export RUSTFLAGS="${RUSTFLAGS} -C link-arg=-target -C link-arg=arm64-apple-ios13.0-simulator" ;; esac; fi; sh "$PODS_TARGET_SRCROOT/../cargokit/build_pod.sh" ../../rust rust_lib_vnt_app',
     :execution_position => :before_compile,
     :input_files => ['${BUILT_PRODUCTS_DIR}/cargokit_phony'],
     # Let XCode know that the static library referenced in -force_load below is

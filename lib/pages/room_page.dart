@@ -15,11 +15,13 @@ import 'package:vnt_app/system_tray_manager.dart';
 class RoomPage extends StatefulWidget {
   final NetworkConfig? selectedConfig;
   final VoidCallback? onDisconnect;
+  final bool isActive;
 
   const RoomPage({
     super.key,
     this.selectedConfig,
     this.onDisconnect,
+    this.isActive = false,
   });
 
   @override
@@ -49,16 +51,42 @@ class _RoomPageState extends State<RoomPage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _updateDevices();
+    if (widget.isActive) {
+      _updateDevices();
+      _startRefreshTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant RoomPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive) {
+        _updateDevices();
+        _startRefreshTimer();
+      } else {
+        _stopRefreshTimer();
+      }
+    }
+  }
+
+  void _startRefreshTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!widget.isActive) return;
       _updateDevices();
     });
+  }
+
+  void _stopRefreshTimer() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _timer?.cancel();
+    _stopRefreshTimer();
     super.dispose();
   }
 
@@ -68,7 +96,7 @@ class _RoomPageState extends State<RoomPage> with SingleTickerProviderStateMixin
   }
 
   void _updateDevices() {
-    if (!mounted) return;
+    if (!mounted || !widget.isActive) return;
 
     final allVnts = vntManager.map;
     List<RustPeerClientInfo> devices = [];
