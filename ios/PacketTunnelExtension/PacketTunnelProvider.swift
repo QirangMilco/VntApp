@@ -67,12 +67,14 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private var running = false
   private var startedAt: Date?
   private var packetsFromSystem: UInt64 = 0
+  private var bytesFromSystem: UInt64 = 0
   private var activeConfig: SharedTunnelConfig?
   private var activeRemoteAddress: String?
   private var appliedVirtualIp: String = ""
   private var appliedVirtualNetmask: String = ""
   private var appliedVirtualGateway: String = ""
   private var packetsToSystem: UInt64 = 0
+  private var bytesToSystem: UInt64 = 0
   private var outputTimer: DispatchSourceTimer?
   private var ipv6MapRefreshTick: Int = 0
   private var lastInputErrorCode: Int32 = 0
@@ -119,58 +121,61 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
     let remoteAddress = normalizeTunnelRemoteAddress(config.tunnelServerAddress)
     NSLog("[PacketTunnel] tunnelRemoteAddress normalized: raw=\(config.tunnelServerAddress ?? "nil"), normalized=\(remoteAddress)")
-    let settings = self.buildNetworkSettings(
-      config: config,
-      remoteAddress: remoteAddress,
-      virtualIp: config.virtualIp,
-      virtualNetmask: config.virtualNetmask,
-      virtualGateway: config.virtualGateway
-    )
 
-    setTunnelNetworkSettings(settings) { [weak self] error in
+    let configuredIp = config.virtualIp.trimmingCharacters(in: .whitespacesAndNewlines)
+    let configuredMask = config.virtualNetmask.trimmingCharacters(in: .whitespacesAndNewlines)
+    let configuredGateway = config.virtualGateway.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    if !configuredIp.isEmpty, configuredIp != "0.0.0.0", !configuredMask.isEmpty, configuredMask != "0.0.0.0", !configuredGateway.isEmpty, configuredGateway != "0.0.0.0" {
+      activateTunnel(
+        config: config,
+        remoteAddress: remoteAddress,
+        virtualIp: configuredIp,
+        virtualNetmask: configuredMask,
+        virtualGateway: configuredGateway,
+        rustAlreadyStarted: false,
+        completionHandler: completionHandler
+      )
+      return
+    }
+
+    SharedTunnelRuntimeState.save(state: "starting", message: "等待服务端分配虚拟 IP")
+    NSLog("[PacketTunnel] virtual IP 未配置，等待服务端分配")
+
+    do {
+      try bootstrapRustDataPlane(config: config)
+      NSLog("[PacketTunnel] rust dataplane started (waiting assigned virtual ip)")
+    } catch {
+      NSLog("[PacketTunnel] rust dataplane start failed: \(error.localizedDescription)")
+      SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+      completionHandler(error)
+      return
+    }
+
+    waitForAssignedVirtualTuple(config: config) { [weak self] tuple in
       guard let self else {
         completionHandler(NSError(domain: "PacketTunnelProvider", code: -2, userInfo: [NSLocalizedDescriptionKey: "provider 已释放"]))
         return
       }
 
-      if let error {
-        NSLog("[PacketTunnel] setTunnelNetworkSettings failed: \(error.localizedDescription)")
-        SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
-        completionHandler(error)
+      guard let tuple else {
+        self.teardownRustDataPlane()
+        let err = NSError(domain: "PacketTunnelProvider", code: -12, userInfo: [NSLocalizedDescriptionKey: "等待服务端分配虚拟 IP 超时"])
+        NSLog("[PacketTunnel] \(err.localizedDescription)")
+        SharedTunnelRuntimeState.save(state: "error", message: err.localizedDescription)
+        completionHandler(err)
         return
       }
 
-      self.running = true
-      self.startedAt = Date()
-      self.packetsFromSystem = 0
-      self.packetsToSystem = 0
-      self.activeConfig = config
-      self.activeRemoteAddress = remoteAddress
-      self.appliedVirtualIp = config.virtualIp
-      self.appliedVirtualNetmask = config.virtualNetmask
-      self.appliedVirtualGateway = config.virtualGateway
-      self.ipv6MapRefreshTick = 0
-      self.lastInputErrorCode = 0
-      self.lastInputErrorAt = .distantPast
-      self.lastOutputErrorCode = 0
-      self.lastOutputErrorAt = .distantPast
-
-      do {
-        try self.bootstrapRustDataPlane(config: config)
-        NSLog("[PacketTunnel] rust dataplane started")
-      } catch {
-        NSLog("[PacketTunnel] rust dataplane start failed: \(error.localizedDescription)")
-        self.running = false
-        SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
-        completionHandler(error)
-        return
-      }
-
-      SharedTunnelRuntimeState.save(state: "running")
-      self.beginReadingPackets()
-      self.beginRustOutputLoop()
-      NSLog("[PacketTunnel] tunnel running")
-      completionHandler(nil)
+      self.activateTunnel(
+        config: config,
+        remoteAddress: remoteAddress,
+        virtualIp: tuple.ip,
+        virtualNetmask: tuple.netmask,
+        virtualGateway: tuple.gateway,
+        rustAlreadyStarted: true,
+        completionHandler: completionHandler
+      )
     }
   }
 
@@ -181,6 +186,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     startedAt = nil
     packetsFromSystem = 0
     packetsToSystem = 0
+    bytesFromSystem = 0
+    bytesToSystem = 0
     activeConfig = nil
     activeRemoteAddress = nil
     appliedVirtualIp = ""
@@ -212,6 +219,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         guard self.running else { return }
 
         self.packetsFromSystem += UInt64(packets.count)
+        self.bytesFromSystem += UInt64(packets.reduce(0) { $0 + $1.count })
         self.handlePacketsFromSystem(packets, protocols: protocols)
         self.beginReadingPackets()
       }
@@ -246,6 +254,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   }
 
   private func logInputBatch(_ packets: [Data], protocols: [NSNumber]) {
+#if DEBUG
     let now = Date()
     guard now.timeIntervalSince(lastInputBatchLogAt) >= 1.0 else { return }
     lastInputBatchLogAt = now
@@ -256,9 +265,11 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     let message = "input batch: count=\(packets.count), samples=\(samples)"
     appendDebugEvent(message)
     NSLog("[PacketTunnel] \(message)")
+#endif
   }
 
   private func logOutputBatch(_ packets: [Data], protocols: [NSNumber]) {
+#if DEBUG
     let now = Date()
     guard now.timeIntervalSince(lastOutputBatchLogAt) >= 1.0 else { return }
     lastOutputBatchLogAt = now
@@ -269,15 +280,18 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     let message = "output batch: count=\(packets.count), samples=\(samples)"
     appendDebugEvent(message)
     NSLog("[PacketTunnel] \(message)")
+#endif
   }
 
   private func logSnapshotDiagnostics(_ snapshot: RustDataplaneSnapshot, config: SharedTunnelConfig) {
+#if DEBUG
     let now = Date()
     guard now.timeIntervalSince(lastSnapshotDiagLogAt) >= 1.0 else { return }
     lastSnapshotDiagLogAt = now
     let message = "snapshot diag: currentVip=\(snapshot.currentVirtualIp ?? "nil"), currentMask=\(snapshot.currentVirtualNetmask ?? "nil"), currentGw=\(snapshot.currentVirtualGateway ?? "nil"), appliedVip=\(appliedVirtualIp), appliedMask=\(appliedVirtualNetmask), appliedGw=\(appliedVirtualGateway), configVip=\(config.virtualIp), configMask=\(config.virtualNetmask), configGw=\(config.virtualGateway), peers=\(snapshot.peerDevices.count), status=\(snapshot.currentStatus ?? "nil"), lastError=\(snapshot.lastError ?? "nil"), lastErrorCode=\(snapshot.lastErrorCode)"
     appendDebugEvent(message)
     NSLog("[PacketTunnel] \(message)")
+#endif
   }
 
   private func reportInputError(code: Int32) {
@@ -325,8 +339,134 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     guard !packets.isEmpty, packets.count == protocols.count else { return }
     logOutputBatch(packets, protocols: protocols)
     packetsToSystem += UInt64(packets.count)
+    bytesToSystem += UInt64(packets.reduce(0) { $0 + $1.count })
     _ = RustDataPlaneBridge.shared.reportOutput(count: UInt64(packets.count))
     packetFlow.writePackets(packets, withProtocols: protocols)
+  }
+
+  private func activateTunnel(
+    config: SharedTunnelConfig,
+    remoteAddress: String,
+    virtualIp: String,
+    virtualNetmask: String,
+    virtualGateway: String,
+    rustAlreadyStarted: Bool,
+    completionHandler: @escaping (Error?) -> Void
+  ) {
+    let settings = buildNetworkSettings(
+      config: config,
+      remoteAddress: remoteAddress,
+      virtualIp: virtualIp,
+      virtualNetmask: virtualNetmask,
+      virtualGateway: virtualGateway
+    )
+
+    setTunnelNetworkSettings(settings) { [weak self] error in
+      guard let self else {
+        completionHandler(NSError(domain: "PacketTunnelProvider", code: -2, userInfo: [NSLocalizedDescriptionKey: "provider 已释放"]))
+        return
+      }
+
+      if let error {
+        NSLog("[PacketTunnel] setTunnelNetworkSettings failed: \(error.localizedDescription)")
+        if rustAlreadyStarted {
+          self.teardownRustDataPlane()
+        }
+        SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+        completionHandler(error)
+        return
+      }
+
+      self.running = true
+      self.startedAt = Date()
+      self.packetsFromSystem = 0
+      self.packetsToSystem = 0
+      self.bytesFromSystem = 0
+      self.bytesToSystem = 0
+      self.activeConfig = config
+      self.activeRemoteAddress = remoteAddress
+      self.appliedVirtualIp = virtualIp
+      self.appliedVirtualNetmask = virtualNetmask
+      self.appliedVirtualGateway = virtualGateway
+      self.ipv6MapRefreshTick = 0
+      self.lastInputErrorCode = 0
+      self.lastInputErrorAt = .distantPast
+      self.lastOutputErrorCode = 0
+      self.lastOutputErrorAt = .distantPast
+
+      if !rustAlreadyStarted {
+        do {
+          try self.bootstrapRustDataPlane(config: config)
+          NSLog("[PacketTunnel] rust dataplane started")
+        } catch {
+          NSLog("[PacketTunnel] rust dataplane start failed: \(error.localizedDescription)")
+          self.running = false
+          SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+          completionHandler(error)
+          return
+        }
+      }
+
+      SharedTunnelRuntimeState.save(state: "running")
+      self.beginReadingPackets()
+      self.beginRustOutputLoop()
+      NSLog("[PacketTunnel] tunnel running, appliedVip=\(virtualIp)")
+      completionHandler(nil)
+    }
+  }
+
+  private func waitForAssignedVirtualTuple(
+    config: SharedTunnelConfig,
+    timeout: TimeInterval = 10,
+    completion: @escaping ((ip: String, netmask: String, gateway: String)?) -> Void
+  ) {
+    let deadline = Date().addingTimeInterval(timeout)
+
+    func resolveGateway(raw: String, current: String, fallback: String) -> String {
+      let trimmedRaw = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !trimmedRaw.isEmpty, trimmedRaw != "0.0.0.0" {
+        return trimmedRaw
+      }
+      let trimmedCurrent = current.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !trimmedCurrent.isEmpty, trimmedCurrent != "0.0.0.0" {
+        return trimmedCurrent
+      }
+      let trimmedFallback = fallback.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !trimmedFallback.isEmpty, trimmedFallback != "0.0.0.0" {
+        return trimmedFallback
+      }
+      return ""
+    }
+
+    func poll() {
+      guard Date() <= deadline else {
+        completion(nil)
+        return
+      }
+
+      if let snapshot = RustDataPlaneBridge.shared.snapshot() {
+        let vip = (snapshot.currentVirtualIp ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let mask = (snapshot.currentVirtualNetmask ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let gw = resolveGateway(
+          raw: snapshot.currentVirtualGateway ?? "",
+          current: self.appliedVirtualGateway,
+          fallback: config.virtualGateway
+        )
+
+        if !vip.isEmpty, vip != "0.0.0.0", !mask.isEmpty, mask != "0.0.0.0", !gw.isEmpty {
+          completion((vip, mask, gw))
+          return
+        }
+      }
+
+      self.ioQueue.asyncAfter(deadline: .now() + .milliseconds(200)) {
+        poll()
+      }
+    }
+
+    ioQueue.async {
+      poll()
+    }
   }
 
   private func buildNetworkSettings(
@@ -577,6 +717,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         "uptimeSec": Int(uptime),
         "packetsFromSystem": rustStats?.packetsFromSystem ?? packetsFromSystem,
         "packetsToSystem": rustStats?.packetsToSystem ?? packetsToSystem,
+        "bytesFromSystem": bytesFromSystem,
+        "bytesToSystem": bytesToSystem,
         "outputQueueLen": rustStats?.outputQueueLen ?? 0,
         "outputDropped": rustStats?.outputDropped ?? 0,
         "pollErrorCount": rustStats?.pollErrorCount ?? 0,

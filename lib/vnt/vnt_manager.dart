@@ -390,8 +390,9 @@ class VntBox {
           (status?['extensionCurrentStatus'] as String?)?.trim();
 
       return {
-        'virtualIp':
-            (virtualIp == null || virtualIp.isEmpty) ? 'N/A' : virtualIp,
+        'virtualIp': (virtualIp == null || virtualIp.isEmpty)
+            ? '等待分配'
+            : virtualIp,
         'virtualNetmask': (virtualNetmask == null || virtualNetmask.isEmpty)
             ? 'N/A'
             : virtualNetmask,
@@ -509,11 +510,23 @@ class VntBox {
   }
 
   String downStream() {
-    return vntApi?.downStream() ?? '0 bytes';
+    if (vntApi != null) {
+      return vntApi!.downStream();
+    }
+
+    final status = _iosStatusCache;
+    final bytes = _toInt(status?['extensionBytesToSystem']);
+    return '$bytes B';
   }
 
   String upStream() {
-    return vntApi?.upStream() ?? '0 bytes';
+    if (vntApi != null) {
+      return vntApi!.upStream();
+    }
+
+    final status = _iosStatusCache;
+    final bytes = _toInt(status?['extensionBytesFromSystem']);
+    return '$bytes B';
   }
 }
 
@@ -714,15 +727,15 @@ class VntAppCall {
   }
 
   static RustDeviceConfig buildIosDeviceConfig(NetworkConfig config) {
-    final ip = config.virtualIPv4.isEmpty ? '10.26.0.2' : config.virtualIPv4;
-    final netmask = _defaultNetmask(config.virtualIPv4);
-    final gateway = _deriveGateway(ip);
-    final network = _deriveNetwork(ip, netmask);
+    final hasStaticIp = config.virtualIPv4.isNotEmpty;
+    final ip = hasStaticIp ? config.virtualIPv4 : '';
+    final netmask = hasStaticIp ? _defaultNetmask(config.virtualIPv4) : '';
+    final gateway = hasStaticIp ? _deriveGateway(ip) : '';
+    final network = hasStaticIp ? _deriveNetwork(ip, netmask) : '';
     final routes = _buildExternalRoutes(config.outIps);
 
-    if (config.virtualIPv4.isEmpty) {
-      debugPrint(
-          '[iOS VPN] 警告: 配置未填写 virtualIPv4，当前使用回退地址 $ip。若服务端分配地址与此不一致，可能导致互联失败。');
+    if (!hasStaticIp) {
+      debugPrint('[iOS VPN] 配置未填写 virtualIPv4，将等待服务端分配虚拟 IP 后再生效隧道地址。');
     }
     debugPrint(
       '[iOS VPN] 组装设备配置: config=${config.configName}, rawVirtualIp=${config.virtualIPv4}, ip=$ip, netmask=$netmask, gateway=$gateway, network=$network, routeCount=${routes.length}, rawOutIps=${config.outIps.length}',

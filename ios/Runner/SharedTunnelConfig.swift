@@ -61,9 +61,9 @@ struct SharedTunnelConfig: Codable {
   let updatedAt: TimeInterval
 
   init(dict: [String: Any]) {
-    self.virtualIp = (dict["virtualIp"] as? String) ?? "10.26.0.2"
-    self.virtualNetmask = (dict["virtualNetmask"] as? String) ?? "255.255.255.0"
-    self.virtualGateway = (dict["virtualGateway"] as? String) ?? "10.26.0.1"
+    self.virtualIp = (dict["virtualIp"] as? String) ?? ""
+    self.virtualNetmask = (dict["virtualNetmask"] as? String) ?? ""
+    self.virtualGateway = (dict["virtualGateway"] as? String) ?? ""
     self.virtualNetwork = dict["virtualNetwork"] as? String
     self.virtualIpAutoAssigned = (dict["virtualIpAutoAssigned"] as? Bool) ?? false
     self.mtu = (dict["mtu"] as? Int) ?? 1400

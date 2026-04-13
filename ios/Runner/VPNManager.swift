@@ -245,6 +245,8 @@ final class VPNManager {
           merged["extensionUptimeSec"] = obj["uptimeSec"]
           merged["extensionPacketsFromSystem"] = obj["packetsFromSystem"]
           merged["extensionPacketsToSystem"] = obj["packetsToSystem"]
+          merged["extensionBytesFromSystem"] = obj["bytesFromSystem"]
+          merged["extensionBytesToSystem"] = obj["bytesToSystem"]
           merged["extensionOutputQueueLen"] = obj["outputQueueLen"]
           merged["extensionOutputDropped"] = obj["outputDropped"]
           merged["extensionPollErrorCount"] = obj["pollErrorCount"]
@@ -288,6 +290,7 @@ final class VPNManager {
         return
       }
 
+#if DEBUG
       if let managers {
         NSLog("[iOS VPN] loadAllFromPreferences managers=\(managers.count)")
         for (idx, m) in managers.enumerated() {
@@ -298,6 +301,7 @@ final class VPNManager {
       } else {
         NSLog("[iOS VPN] loadAllFromPreferences managers=0")
       }
+#endif
 
       if let manager = self.pickManager(from: managers) {
         completion(manager, nil)
