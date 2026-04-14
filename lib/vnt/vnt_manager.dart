@@ -7,6 +7,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vnt_app/data_persistence.dart';
 import 'package:vnt_app/network_config.dart';
 import 'package:vnt_app/src/rust/api/vnt_api.dart';
 import 'package:vnt_app/utils/ip_utils.dart';
@@ -397,11 +398,37 @@ class VntBox {
           (status?['extensionTunnelServerAddress'] as String?)?.trim();
       final currentStatus =
           (status?['extensionCurrentStatus'] as String?)?.trim();
+      final extensionBroadcastIp =
+          (status?['extensionBroadcastIp'] as String?)?.trim();
+      final extensionNatType = (status?['extensionNatType'] as String?)?.trim();
+      final extensionLocalIpv4 =
+          (status?['extensionLocalIpv4'] as String?)?.trim();
+      final extensionIpv6 = (status?['extensionIpv6'] as String?)?.trim();
+      final extensionPublicIpsRaw = status?['extensionPublicIps'];
+      final extensionPublicIps = extensionPublicIpsRaw is List
+          ? extensionPublicIpsRaw
+              .map((e) => e.toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toList()
+          : <String>[];
+
+      String? computedBroadcast;
+      if (virtualIp != null &&
+          virtualIp.isNotEmpty &&
+          virtualNetmask != null &&
+          virtualNetmask.isNotEmpty) {
+        final ip = Ipv4Addr.tryParse(virtualIp);
+        final mask = Ipv4Addr.tryParse(virtualNetmask);
+        if (ip != null && mask != null) {
+          final broadcast =
+              (ip.toInt() & mask.toInt()) | (~mask.toInt() & 0xFFFFFFFF);
+          computedBroadcast = Ipv4Addr.fromInt(broadcast);
+        }
+      }
 
       return {
-        'virtualIp': (virtualIp == null || virtualIp.isEmpty)
-            ? '等待分配'
-            : virtualIp,
+        'virtualIp':
+            (virtualIp == null || virtualIp.isEmpty) ? '等待分配' : virtualIp,
         'virtualNetmask': (virtualNetmask == null || virtualNetmask.isEmpty)
             ? 'N/A'
             : virtualNetmask,
@@ -411,7 +438,10 @@ class VntBox {
         'virtualNetwork': (virtualNetwork == null || virtualNetwork.isEmpty)
             ? 'N/A'
             : virtualNetwork,
-        'broadcastIp': '',
+        'broadcastIp':
+            (extensionBroadcastIp != null && extensionBroadcastIp.isNotEmpty)
+                ? extensionBroadcastIp
+                : (computedBroadcast ?? ''),
         'connectServer': (connectServer == null || connectServer.isEmpty)
             ? vntConfig.serverAddressStr
             : connectServer,
@@ -420,11 +450,16 @@ class VntBox {
             : ((currentStatus == null || currentStatus.isEmpty)
                 ? 'Connected'
                 : currentStatus),
-        'publicIps': <String>[],
-        'natType': 'Unknown',
-        'localIpv4':
-            networkConfig.localIpv4.isEmpty ? null : networkConfig.localIpv4,
-        'ipv6': null,
+        'publicIps': extensionPublicIps,
+        'natType': (extensionNatType == null || extensionNatType.isEmpty)
+            ? 'Unknown'
+            : extensionNatType,
+        'localIpv4': (extensionLocalIpv4 == null || extensionLocalIpv4.isEmpty)
+            ? (networkConfig.localIpv4.isEmpty ? null : networkConfig.localIpv4)
+            : extensionLocalIpv4,
+        'ipv6': (extensionIpv6 == null || extensionIpv6.isEmpty)
+            ? null
+            : extensionIpv6,
       };
     }
 
@@ -541,6 +576,7 @@ class VntBox {
 
 class VntManager {
   HashMap<String, VntBox> map = HashMap();
+  bool _iosSyncInProgress = false;
   bool connecting = false;
   // 记录主动断开连接的配置key，避免显示"服务已停止"提示
   final Set<String> _manualDisconnecting = {};
@@ -628,6 +664,112 @@ class VntManager {
 
   bool isConnecting() {
     return connecting;
+  }
+
+  Future<void> syncIosExternalConnectionIfNeeded() async {
+    if (!Platform.isIOS || _iosSyncInProgress) {
+      return;
+    }
+
+    _iosSyncInProgress = true;
+    try {
+      final status = await VntAppCall.getVpnStatus();
+      if (status == null) {
+        return;
+      }
+
+      final vpnStatus = (status['vpnStatus'] ?? '').toString().toLowerCase();
+      final runtimeState =
+          (status['runtimeState'] ?? '').toString().toLowerCase();
+      final extensionState =
+          (status['extensionState'] ?? '').toString().toLowerCase();
+
+      final isRunning = vpnStatus == 'connected' ||
+          vpnStatus == 'connecting' ||
+          vpnStatus == 'reasserting' ||
+          runtimeState == 'running' ||
+          runtimeState == 'starting' ||
+          extensionState == 'running';
+
+      if (!isRunning) {
+        map.removeWhere((_, v) => v.isClosed());
+        if (map.isNotEmpty) {
+          await removeAll();
+        }
+        return;
+      }
+
+      if (map.isNotEmpty) {
+        return;
+      }
+
+      final dataPersistence = DataPersistence();
+      final configs = await dataPersistence.loadData();
+      if (configs.isEmpty) {
+        return;
+      }
+
+      String? targetKey = await dataPersistence.loadDefaultKey();
+      if (targetKey == null || targetKey.isEmpty) {
+        final extVip = (status['extensionVirtualIp'] ?? '').toString().trim();
+        if (extVip.isNotEmpty && extVip != '等待分配') {
+          final matched =
+              configs.where((c) => c.virtualIPv4.trim() == extVip).firstOrNull;
+          targetKey = matched?.itemKey;
+        }
+      }
+
+      NetworkConfig? config;
+      if (targetKey != null && targetKey.isNotEmpty) {
+        config = configs.where((c) => c.itemKey == targetKey).firstOrNull;
+      }
+      config ??= configs.first;
+
+      final vntConfig = VntConfig(
+        tap: false,
+        token: config.token,
+        deviceId: config.deviceID,
+        name: config.deviceName,
+        serverAddressStr: config.serverAddress,
+        nameServers: config.dns,
+        stunServer: config.stunServers,
+        inIps: config.inIps.map((v) => IpUtils.parseInIpString(v)).toList(),
+        outIps: config.outIps.map((v) => IpUtils.parseOutIpString(v)).toList(),
+        password: config.groupPassword.isEmpty ? null : config.groupPassword,
+        mtu: config.mtu == 0 ? null : config.mtu,
+        ip: config.virtualIPv4.isEmpty ? null : config.virtualIPv4,
+        noProxy: config.noInIpProxy,
+        serverEncrypt: config.isServerEncrypted,
+        cipherModel: config.encryptionAlgorithm,
+        finger: config.dataFingerprintVerification,
+        punchModel: config.punchModel,
+        ports: config.ports.isEmpty ? null : Uint16List.fromList(config.ports),
+        firstLatency: config.firstLatency,
+        deviceName: config.virtualNetworkCardName.isEmpty
+            ? null
+            : config.virtualNetworkCardName,
+        useChannelType: config.useChannelType,
+        packetLossRate: config.simulatedPacketLossRate == 0
+            ? null
+            : config.simulatedPacketLossRate,
+        packetDelay: config.simulatedLatency,
+        portMappingList: config.portMappings,
+        compressor: config.compressor.isEmpty ? 'none' : config.compressor,
+        allowWireGuard: config.allowWg,
+        localIpv4: config.localIpv4.isEmpty ? null : config.localIpv4,
+      );
+
+      map[config.itemKey] = VntBox(
+        vntApi: null,
+        vntConfig: vntConfig,
+        networkConfig: config,
+        iosStatus: status,
+      );
+    } catch (_) {
+      // 忽略同步异常，避免影响主流程
+    } finally {
+      _iosSyncInProgress = false;
+    }
   }
 
   bool hasConnection() {

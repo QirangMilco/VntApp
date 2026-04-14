@@ -43,6 +43,11 @@ struct RustDataplaneSnapshot: Decodable {
   let currentVirtualNetwork: String?
   let currentConnectServer: String?
   let currentStatus: String?
+  let currentBroadcastIp: String?
+  let natType: String?
+  let publicIps: [String]?
+  let localIpv4: String?
+  let ipv6: String?
   let peerDevices: [RustPeerSnapshot]
   let lastError: String?
   let lastErrorCode: Int32

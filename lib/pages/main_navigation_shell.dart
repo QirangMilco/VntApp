@@ -30,7 +30,8 @@ class MainNavigationShell extends StatefulWidget {
   State<MainNavigationShell> createState() => _MainNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell> {
+class _MainNavigationShellState extends State<MainNavigationShell>
+    with WidgetsBindingObserver {
   int _selectedIndex = 0;
   NetworkConfig? _selectedConfig;
   VoidCallback? _refreshConfigList;
@@ -38,17 +39,55 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   // 导航项配置
   static const List<_NavItem> _navItems = [
-    _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: '仪表盘'),
-    _NavItem(icon: Icons.meeting_room_outlined, activeIcon: Icons.meeting_room, label: '房间'),
-    _NavItem(icon: Icons.folder_outlined, activeIcon: Icons.folder, label: '配置'),
-    _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: '设置'),
+    _NavItem(
+        icon: Icons.dashboard_outlined,
+        activeIcon: Icons.dashboard,
+        label: '仪表盘'),
+    _NavItem(
+        icon: Icons.meeting_room_outlined,
+        activeIcon: Icons.meeting_room,
+        label: '房间'),
+    _NavItem(
+        icon: Icons.folder_outlined, activeIcon: Icons.folder, label: '配置'),
+    _NavItem(
+        icon: Icons.settings_outlined, activeIcon: Icons.settings, label: '设置'),
     _NavItem(icon: Icons.info_outline, activeIcon: Icons.info, label: '关于'),
   ];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _autoConnect();
+    _syncIosConnectionState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncIosConnectionState();
+    }
+  }
+
+  Future<void> _syncIosConnectionState() async {
+    if (!Platform.isIOS) {
+      return;
+    }
+
+    await vntManager.syncIosExternalConnectionIfNeeded();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _selectedConfig = vntManager.getOne()?.getNetConfig();
+    });
   }
 
   /// 自动连接逻辑
@@ -164,7 +203,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             setState(() {
               _selectedConfig = config;
             });
-            showTopToast(context, '[${config.configName}] 连接成功', isSuccess: true);
+            showTopToast(context, '[${config.configName}] 连接成功',
+                isSuccess: true);
             // 连接成功，更新磁贴和小组件状态
             if (Platform.isAndroid) {
               VntAppCall.updateWidgetAndTile(true);
@@ -180,7 +220,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             Navigator.of(context).pop(); // 关闭连接中对话框
           }
           // 统一显示"服务已停止"提示
-          showTopToast(context, '[${config.configName}] 服务已停止', isSuccess: false);
+          showTopToast(context, '[${config.configName}] 服务已停止',
+              isSuccess: false);
           // 服务停止，更新磁贴和小组件状态
           if (Platform.isAndroid) {
             VntAppCall.updateWidgetAndTile(vntManager.hasConnection());
@@ -208,7 +249,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           onece = false;
           Navigator.of(context).pop(); // 关闭连接中对话框
           vntManager.remove(config.itemKey);
-          showTopToast(context, '[${config.configName}] 连接超时 ${msg.address}', isSuccess: false);
+          showTopToast(context, '[${config.configName}] 连接超时 ${msg.address}',
+              isSuccess: false);
           // 连接超时，更新磁贴和小组件状态
           if (Platform.isAndroid) {
             VntAppCall.updateWidgetAndTile(vntManager.hasConnection());
@@ -275,7 +317,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     final isMediumScreen = screenWidth > 600 && screenWidth <= 800;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.lightBackground,
       body: Column(
         children: [
           // 自定义标题栏（桌面平台）
@@ -315,9 +358,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     // 基准高度：700px，高度越小缩放比例越小，高度越大缩放比例越大
     double heightScale;
     if (screenHeight >= 900) {
-      heightScale = 1.2;  // 超大屏幕：放大20%
+      heightScale = 1.2; // 超大屏幕：放大20%
     } else if (screenHeight >= 700) {
-      heightScale = 1.0;  // 标准屏幕：100%
+      heightScale = 1.0; // 标准屏幕：100%
     } else if (screenHeight >= 600) {
       heightScale = 0.85; // 中等屏幕：缩小15%
     } else if (screenHeight >= 500) {
@@ -350,7 +393,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     return Container(
       width: sideNavWidth,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
+        color:
+            isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
@@ -381,7 +425,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                           height: logoSize,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [primaryColor, primaryColor.withOpacity(0.7)],
+                              colors: [
+                                primaryColor,
+                                primaryColor.withOpacity(0.7)
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -402,7 +449,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     style: TextStyle(
                       fontSize: logoFontSize,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                      color: isDark
+                          ? AppTheme.darkTextPrimary
+                          : AppTheme.lightTextPrimary,
                     ),
                   ),
                 ],
@@ -437,7 +486,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             border: isSelected
-                                ? Border.all(color: primaryColor.withOpacity(0.3))
+                                ? Border.all(
+                                    color: primaryColor.withOpacity(0.3))
                                 : null,
                           ),
                           child: Column(
@@ -447,7 +497,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                                 isSelected ? item.activeIcon : item.icon,
                                 color: isSelected
                                     ? primaryColor
-                                    : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                                    : (isDark
+                                        ? AppTheme.darkTextSecondary
+                                        : AppTheme.lightTextSecondary),
                                 size: navIconSize,
                               ),
                               SizedBox(height: navItemSpacing),
@@ -455,10 +507,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                                 item.label,
                                 style: TextStyle(
                                   fontSize: navFontSize,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
                                   color: isSelected
                                       ? primaryColor
-                                      : (isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary),
+                                      : (isDark
+                                          ? AppTheme.darkTextPrimary
+                                          : AppTheme.lightTextPrimary),
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -503,7 +559,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                       children: [
                         Icon(
                           isDark ? Icons.light_mode : Icons.dark_mode,
-                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                          color: isDark
+                              ? AppTheme.darkTextSecondary
+                              : AppTheme.lightTextSecondary,
                           size: navIconSize,
                         ),
                         SizedBox(height: navItemSpacing),
@@ -511,7 +569,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                           isDark ? '日间' : '暗黑',
                           style: TextStyle(
                             fontSize: navFontSize,
-                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                            color: isDark
+                                ? AppTheme.darkTextPrimary
+                                : AppTheme.lightTextPrimary,
                           ),
                         ),
                       ],
@@ -531,7 +591,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     final primaryColor = Theme.of(context).primaryColor;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
+        color:
+            isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
@@ -569,7 +630,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                           isSelected ? item.activeIcon : item.icon,
                           color: isSelected
                               ? primaryColor
-                              : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                              : (isDark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.lightTextSecondary),
                           size: 24,
                         ),
                         const SizedBox(height: 4),
@@ -577,10 +640,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                           item.label,
                           style: TextStyle(
                             fontSize: context.fontXSmall,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                             color: isSelected
                                 ? primaryColor
-                                : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                                : (isDark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.lightTextSecondary),
                           ),
                         ),
                       ],
@@ -637,11 +704,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             debugPrint('Default key: $defaultKey');
             if (defaultKey != null && defaultKey.isNotEmpty) {
               final configs = await dataPersistence.loadData();
-              final config = configs.where((c) => c.itemKey == defaultKey).firstOrNull;
+              final config =
+                  configs.where((c) => c.itemKey == defaultKey).firstOrNull;
               debugPrint('Found config: ${config?.configName}');
               if (config != null) {
                 // 直接连接，不跳转页面
-                debugPrint('Connecting to default config: ${config.configName}');
+                debugPrint(
+                    'Connecting to default config: ${config.configName}');
                 _connectToConfigDirectly(config);
                 return;
               }

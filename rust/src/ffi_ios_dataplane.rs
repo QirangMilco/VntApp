@@ -51,6 +51,11 @@ struct IosDataplaneSnapshot {
     current_virtual_network: Option<String>,
     current_connect_server: Option<String>,
     current_status: Option<String>,
+    current_broadcast_ip: Option<String>,
+    nat_type: Option<String>,
+    public_ips: Option<Vec<String>>,
+    local_ipv4: Option<String>,
+    ipv6: Option<String>,
     peer_devices: Vec<IosPeerSnapshot>,
     last_error: Option<String>,
     last_error_code: i32,
@@ -651,9 +656,10 @@ pub extern "C" fn vnt_ios_dataplane_snapshot_json(
 
     let snapshot = match global_state().lock() {
         Ok(state) => {
-            let (current_virtual_ip, current_virtual_netmask, current_virtual_gateway, current_virtual_network, current_connect_server, current_status, peer_devices) =
+            let (current_virtual_ip, current_virtual_netmask, current_virtual_gateway, current_virtual_network, current_connect_server, current_status, current_broadcast_ip, nat_type, public_ips, local_ipv4, ipv6, peer_devices) =
                 if let Some(vnt) = state.vnt.as_ref() {
                     let current = vnt.current_device();
+                    let nat = vnt.nat_info();
                     let peers = vnt
                         .device_list()
                         .into_iter()
@@ -693,10 +699,15 @@ pub extern "C" fn vnt_ios_dataplane_snapshot_json(
                         Some(current.virtual_network.to_string()),
                         Some(current.connect_server.to_string()),
                         Some(format!("{:?}", current.status)),
+                        Some(current.broadcast_ip.to_string()),
+                        Some(format!("{:?}", nat.nat_type)),
+                        Some(nat.public_ips.iter().map(|ip| ip.to_string()).collect::<Vec<_>>()),
+                        nat.local_ipv4().map(|v| v.to_string()),
+                        nat.ipv6().map(|v| v.to_string()),
                         peers,
                     )
                 } else {
-                    (None, None, None, None, None, None, Vec::new())
+                    (None, None, None, None, None, None, None, None, None, None, None, Vec::new())
                 };
 
             IosDataplaneSnapshot {
@@ -707,6 +718,11 @@ pub extern "C" fn vnt_ios_dataplane_snapshot_json(
                 current_virtual_network,
                 current_connect_server,
                 current_status,
+                current_broadcast_ip,
+                nat_type,
+                public_ips,
+                local_ipv4,
+                ipv6,
                 peer_devices,
                 last_error: state.last_error.clone(),
                 last_error_code: state.last_error_code,

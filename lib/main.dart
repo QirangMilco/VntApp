@@ -45,7 +45,8 @@ Future<void> main() async {
   // macOS 启动时先检查权限，在Flutter初始化之前
   // 避免显示窗口后再提示输入密码
   if (Platform.isMacOS) {
-    final needsRestart = await MacOSPrivilegeManager.checkAndRequestPrivilegeOnStartup();
+    final needsRestart =
+        await MacOSPrivilegeManager.checkAndRequestPrivilegeOnStartup();
     if (needsRestart) {
       // app 正在以管理员权限重新启动，当前进程将退出
       return;
@@ -145,7 +146,7 @@ Future<void> main() async {
     }
   }
 
-  if (Platform.isAndroid) {
+  if (Platform.isAndroid || Platform.isIOS) {
     VntAppCall.init();
   }
 
@@ -308,7 +309,8 @@ class _MainAppState extends State<MainApp> with WindowListener {
         }
 
         // 开始连接
-        debugPrint('磁贴启动：开始连接配置 [${config.configName}] (key: ${config.itemKey})');
+        debugPrint(
+            '磁贴启动：开始连接配置 [${config.configName}] (key: ${config.itemKey})');
         final receivePort = ReceivePort();
 
         receivePort.listen((msg) {
@@ -410,18 +412,24 @@ class _MainAppState extends State<MainApp> with WindowListener {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: isDark
+              ? AppTheme.darkCardBackground
+              : AppTheme.lightCardBackground,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             '确认退出',
             style: TextStyle(
-              color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+              color:
+                  isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
             ),
           ),
           content: Text(
             '由于 macOS 安全限制，应用无法最小化。\n\n你确认要退出程序吗？',
             style: TextStyle(
-              color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+              color: isDark
+                  ? AppTheme.darkTextSecondary
+                  : AppTheme.lightTextSecondary,
             ),
           ),
           actions: <Widget>[
@@ -431,7 +439,9 @@ class _MainAppState extends State<MainApp> with WindowListener {
                 '取消',
                 style: TextStyle(
                   fontSize: context.fontXSmall,
-                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                  color: isDark
+                      ? AppTheme.darkTextSecondary
+                      : AppTheme.lightTextSecondary,
                 ),
               ),
             ),
@@ -444,7 +454,8 @@ class _MainAppState extends State<MainApp> with WindowListener {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text('退出应用', style: TextStyle(fontSize: context.fontXSmall)),
+              child:
+                  Text('退出应用', style: TextStyle(fontSize: context.fontXSmall)),
             ),
           ],
         );
@@ -464,12 +475,17 @@ class _MainAppState extends State<MainApp> with WindowListener {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              backgroundColor: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              backgroundColor: isDark
+                  ? AppTheme.darkCardBackground
+                  : AppTheme.lightCardBackground,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               title: Text(
                 '确认关闭',
                 style: TextStyle(
-                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                  color: isDark
+                      ? AppTheme.darkTextPrimary
+                      : AppTheme.lightTextPrimary,
                 ),
               ),
               content: Column(
@@ -478,7 +494,9 @@ class _MainAppState extends State<MainApp> with WindowListener {
                   Text(
                     '你确定要关闭应用吗？',
                     style: TextStyle(
-                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                      color: isDark
+                          ? AppTheme.darkTextSecondary
+                          : AppTheme.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -497,7 +515,9 @@ class _MainAppState extends State<MainApp> with WindowListener {
                         '记住此操作',
                         style: TextStyle(
                           fontSize: context.fontXSmall,
-                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                          color: isDark
+                              ? AppTheme.darkTextSecondary
+                              : AppTheme.lightTextSecondary,
                         ),
                       ),
                     ],
@@ -511,7 +531,9 @@ class _MainAppState extends State<MainApp> with WindowListener {
                     '隐藏到托盘',
                     style: TextStyle(
                       fontSize: context.fontXSmall,
-                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                      color: isDark
+                          ? AppTheme.darkTextSecondary
+                          : AppTheme.lightTextSecondary,
                     ),
                   ),
                 ),
@@ -524,7 +546,8 @@ class _MainAppState extends State<MainApp> with WindowListener {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text('退出应用', style: TextStyle(fontSize: context.fontXSmall)),
+                  child: Text('退出应用',
+                      style: TextStyle(fontSize: context.fontXSmall)),
                 ),
               ],
             );
@@ -550,7 +573,8 @@ class _MainAppState extends State<MainApp> with WindowListener {
 }
 
 Future<void> initSystemTray() async {
-  String path = Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+  String path =
+      Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png';
 
   // 初始化系统托盘
   await systemTray.initSystemTray(
