@@ -56,6 +56,7 @@ struct IosDataplaneSnapshot {
     public_ips: Option<Vec<String>>,
     local_ipv4: Option<String>,
     ipv6: Option<String>,
+    peer_virtual_ips: Vec<String>,
     peer_devices: Vec<IosPeerSnapshot>,
     last_error: Option<String>,
     last_error_code: i32,
@@ -121,6 +122,20 @@ impl VntCallback for IosVntCallback {
         }
         true
     }
+
+    fn peer_client_list(&self, info: Vec<vnt::handle::callback::PeerClientInfo>) {
+        if let Ok(mut state) = global_state().lock() {
+            if state.running {
+                let mut peer_virtual_ips = info
+                    .into_iter()
+                    .map(|peer| peer.virtual_ip)
+                    .collect::<Vec<_>>();
+                peer_virtual_ips.sort_unstable();
+                peer_virtual_ips.dedup();
+                state.peer_virtual_ips = peer_virtual_ips;
+            }
+        }
+    }
 }
 
 #[derive(Default)]
@@ -138,6 +153,7 @@ struct DataPlaneState {
     assigned_virtual_ip: Option<Ipv4Addr>,
     assigned_virtual_netmask: Option<Ipv4Addr>,
     assigned_virtual_gateway: Option<Ipv4Addr>,
+    peer_virtual_ips: Vec<Ipv4Addr>,
     sender: Option<IpPacketSender>,
     vnt: Option<Vnt>,
     ipv6_to_virtual_ipv4: std::collections::HashMap<Ipv6Addr, Ipv4Addr>,
@@ -274,6 +290,8 @@ fn build_vnt(cfg: IosVntConfig, writer: IosDeviceWriter) -> anyhow::Result<(Vnt,
         punch_model,
         cfg.ports,
         cfg.first_latency,
+        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
+        None,
         use_channel_type,
         cfg.packet_loss_rate,
         cfg.packet_delay,
@@ -343,6 +361,7 @@ pub extern "C" fn vnt_ios_dataplane_start(config_json: *const c_char) -> i32 {
             state.assigned_virtual_ip = None;
             state.assigned_virtual_netmask = None;
             state.assigned_virtual_gateway = None;
+            state.peer_virtual_ips.clear();
             state.sender = Some(sender);
             state.ipv6_to_virtual_ipv4.clear();
             for peer in vnt.device_list() {
@@ -353,6 +372,13 @@ pub extern "C" fn vnt_ios_dataplane_start(config_json: *const c_char) -> i32 {
                     }
                 }
             }
+            state.peer_virtual_ips = vnt
+                .device_list()
+                .into_iter()
+                .map(|peer| peer.virtual_ip)
+                .collect::<Vec<_>>();
+            state.peer_virtual_ips.sort_unstable();
+            state.peer_virtual_ips.dedup();
             state.vnt = Some(vnt);
             if let Ok(mut q) = state.output_packets.lock() {
                 q.clear();
@@ -375,6 +401,7 @@ pub extern "C" fn vnt_ios_dataplane_stop() -> i32 {
             state.assigned_virtual_ip = None;
             state.assigned_virtual_netmask = None;
             state.assigned_virtual_gateway = None;
+            state.peer_virtual_ips.clear();
             state.last_error_code = 0;
             if let Ok(mut q) = state.output_packets.lock() {
                 q.clear();
@@ -656,6 +683,11 @@ pub extern "C" fn vnt_ios_dataplane_snapshot_json(
 
     let snapshot = match global_state().lock() {
         Ok(state) => {
+            let peer_virtual_ips = state
+                .peer_virtual_ips
+                .iter()
+                .map(|ip| ip.to_string())
+                .collect::<Vec<_>>();
             let (current_virtual_ip, current_virtual_netmask, current_virtual_gateway, current_virtual_network, current_connect_server, current_status, current_broadcast_ip, nat_type, public_ips, local_ipv4, ipv6, peer_devices) =
                 if let Some(vnt) = state.vnt.as_ref() {
                     let current = vnt.current_device();
@@ -723,6 +755,7 @@ pub extern "C" fn vnt_ios_dataplane_snapshot_json(
                 public_ips,
                 local_ipv4,
                 ipv6,
+                peer_virtual_ips,
                 peer_devices,
                 last_error: state.last_error.clone(),
                 last_error_code: state.last_error_code,

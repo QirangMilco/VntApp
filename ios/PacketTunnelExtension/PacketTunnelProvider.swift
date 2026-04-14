@@ -86,6 +86,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private var lastInputBatchLogAt: Date = .distantPast
   private var lastOutputBatchLogAt: Date = .distantPast
   private var lastSnapshotDiagLogAt: Date = .distantPast
+  private var appliedPeerRouteSignature: String = ""
   private var debugEvents: [String] = []
 
   override func startTunnel(
@@ -173,6 +174,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         virtualIp: tuple.ip,
         virtualNetmask: tuple.netmask,
         virtualGateway: tuple.gateway,
+        initialPeerHosts: tuple.peerHosts,
         rustAlreadyStarted: true,
         completionHandler: completionHandler
       )
@@ -193,6 +195,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     appliedVirtualIp = ""
     appliedVirtualNetmask = ""
     appliedVirtualGateway = ""
+    appliedPeerRouteSignature = ""
     ipv6MapRefreshTick = 0
     lastInputErrorCode = 0
     lastInputErrorAt = .distantPast
@@ -288,7 +291,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     let now = Date()
     guard now.timeIntervalSince(lastSnapshotDiagLogAt) >= 1.0 else { return }
     lastSnapshotDiagLogAt = now
-    let message = "snapshot diag: currentVip=\(snapshot.currentVirtualIp ?? "nil"), currentMask=\(snapshot.currentVirtualNetmask ?? "nil"), currentGw=\(snapshot.currentVirtualGateway ?? "nil"), appliedVip=\(appliedVirtualIp), appliedMask=\(appliedVirtualNetmask), appliedGw=\(appliedVirtualGateway), configVip=\(config.virtualIp), configMask=\(config.virtualNetmask), configGw=\(config.virtualGateway), peers=\(snapshot.peerDevices.count), status=\(snapshot.currentStatus ?? "nil"), lastError=\(snapshot.lastError ?? "nil"), lastErrorCode=\(snapshot.lastErrorCode)"
+    let message = "snapshot diag: currentVip=\(snapshot.currentVirtualIp ?? "nil"), currentMask=\(snapshot.currentVirtualNetmask ?? "nil"), currentGw=\(snapshot.currentVirtualGateway ?? "nil"), appliedVip=\(appliedVirtualIp), appliedMask=\(appliedVirtualNetmask), appliedGw=\(appliedVirtualGateway), configVip=\(config.virtualIp), configMask=\(config.virtualNetmask), configGw=\(config.virtualGateway), peerVirtualIps=\(snapshot.peerVirtualIps?.count ?? 0), peers=\(snapshot.peerDevices.count), status=\(snapshot.currentStatus ?? "nil"), lastError=\(snapshot.lastError ?? "nil"), lastErrorCode=\(snapshot.lastErrorCode)"
     appendDebugEvent(message)
     NSLog("[PacketTunnel] \(message)")
 #endif
@@ -350,6 +353,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     virtualIp: String,
     virtualNetmask: String,
     virtualGateway: String,
+    initialPeerHosts: [String] = [],
     rustAlreadyStarted: Bool,
     completionHandler: @escaping (Error?) -> Void
   ) {
@@ -358,7 +362,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       remoteAddress: remoteAddress,
       virtualIp: virtualIp,
       virtualNetmask: virtualNetmask,
-      virtualGateway: virtualGateway
+      virtualGateway: virtualGateway,
+      peerHosts: initialPeerHosts
     )
 
     setTunnelNetworkSettings(settings) { [weak self] error in
@@ -393,6 +398,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       self.lastInputErrorAt = .distantPast
       self.lastOutputErrorCode = 0
       self.lastOutputErrorAt = .distantPast
+      self.appliedPeerRouteSignature = self.peerRouteSignature(initialPeerHosts)
 
       if !rustAlreadyStarted {
         do {
@@ -410,7 +416,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       SharedTunnelRuntimeState.save(state: "running")
       self.beginReadingPackets()
       self.beginRustOutputLoop()
-      NSLog("[PacketTunnel] tunnel running, appliedVip=\(virtualIp)")
+      NSLog("[PacketTunnel] tunnel running, appliedVip=\(virtualIp), peerRoutes=\(self.appliedPeerRouteSignature)")
       completionHandler(nil)
     }
   }
@@ -418,7 +424,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private func waitForAssignedVirtualTuple(
     config: SharedTunnelConfig,
     timeout: TimeInterval = 10,
-    completion: @escaping ((ip: String, netmask: String, gateway: String)?) -> Void
+    completion: @escaping ((ip: String, netmask: String, gateway: String, peerHosts: [String])?) -> Void
   ) {
     let deadline = Date().addingTimeInterval(timeout)
 
@@ -452,9 +458,10 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
           current: self.appliedVirtualGateway,
           fallback: config.virtualGateway
         )
+        let peerHosts = self.peerHosts(from: snapshot, localVirtualIp: vip)
 
         if !vip.isEmpty, vip != "0.0.0.0", !mask.isEmpty, mask != "0.0.0.0", !gw.isEmpty {
-          completion((vip, mask, gw))
+          completion((vip, mask, gw, peerHosts))
           return
         }
       }
@@ -474,7 +481,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     remoteAddress: String,
     virtualIp: String,
     virtualNetmask: String,
-    virtualGateway: String
+    virtualGateway: String,
+    peerHosts: [String] = []
   ) -> NEPacketTunnelNetworkSettings {
     let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: remoteAddress)
 
@@ -483,29 +491,18 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       NEIPv4Route(destinationAddress: route.destination, subnetMask: route.netmask)
     }
     if includedRoutes.isEmpty {
-      if config.virtualIpAutoAssigned {
-        includedRoutes = [NEIPv4Route.default()]
-        var excluded = [NEIPv4Route]()
-        var excludedHosts = Set<String>()
-
-        func appendExcludedHost(_ raw: String?) {
-          guard let host = Self.ipv4Host(raw), !host.isEmpty else { return }
-          guard excludedHosts.insert(host).inserted else { return }
-          excluded.append(NEIPv4Route(destinationAddress: host, subnetMask: "255.255.255.255"))
-        }
-
-        appendExcludedHost(remoteAddress)
-        appendExcludedHost(config.tunnelServerAddress)
-        appendExcludedHost(normalizeTunnelRemoteAddress(config.tunnelServerAddress))
-
-        ipv4.excludedRoutes = excluded.isEmpty ? nil : excluded
-        NSLog("[PacketTunnel] no externalRoute + autoAssignedIP, use default route, excluded server hosts=\(Array(excludedHosts).sorted())")
-      } else {
-        let network = config.virtualNetwork ?? Self.networkAddress(ip: virtualIp, netmask: virtualNetmask)
-        includedRoutes = [NEIPv4Route(destinationAddress: network, subnetMask: virtualNetmask)]
-        NSLog("[PacketTunnel] no externalRoute, fallback to virtual network route: \(network)/\(virtualNetmask)")
-      }
+      let network = config.virtualNetwork ?? Self.networkAddress(ip: virtualIp, netmask: virtualNetmask)
+      includedRoutes = [NEIPv4Route(destinationAddress: network, subnetMask: virtualNetmask)]
+      NSLog("[PacketTunnel] no externalRoute, fallback to virtual network route: \(network)/\(virtualNetmask)")
     }
+
+    var routeKeys = Set(includedRoutes.map { "\($0.destinationAddress)/\($0.destinationSubnetMask)" })
+    for host in peerHosts {
+      let key = "\(host)/255.255.255.255"
+      guard routeKeys.insert(key).inserted else { continue }
+      includedRoutes.append(NEIPv4Route(destinationAddress: host, subnetMask: "255.255.255.255"))
+    }
+
     ipv4.includedRoutes = includedRoutes
     settings.ipv4Settings = ipv4
 
@@ -513,6 +510,37 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     settings.dnsSettings = NEDNSSettings(servers: dnsServers)
     settings.mtu = NSNumber(value: max(1200, config.mtu))
     return settings
+  }
+
+  private func peerHosts(from snapshot: RustDataplaneSnapshot, localVirtualIp: String) -> [String] {
+    var seen = Set<String>()
+    var hosts: [String] = []
+
+    if let peerVirtualIps = snapshot.peerVirtualIps {
+      for raw in peerVirtualIps {
+        let host = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !host.isEmpty, host != localVirtualIp else { continue }
+        guard Self.ipv4Host(host) != nil else { continue }
+        guard seen.insert(host).inserted else { continue }
+        hosts.append(host)
+      }
+    }
+
+    if hosts.isEmpty {
+      for peer in snapshot.peerDevices {
+        let host = peer.virtualIp.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !host.isEmpty, host != localVirtualIp else { continue }
+        guard Self.ipv4Host(host) != nil else { continue }
+        guard seen.insert(host).inserted else { continue }
+        hosts.append(host)
+      }
+    }
+
+    return hosts.sorted()
+  }
+
+  private func peerRouteSignature(_ hosts: [String]) -> String {
+    hosts.joined(separator: ",")
   }
 
   private func tryApplyAssignedVirtualIp() {
@@ -551,8 +579,11 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       return
     }
 
-    guard vip != appliedVirtualIp || mask != appliedVirtualNetmask || effectiveGateway != appliedVirtualGateway else {
-      logReapplySkip(reason: "assigned tuple unchanged: ip=\(vip), mask=\(mask), gw=\(effectiveGateway)")
+    let peerHosts = peerHosts(from: snapshot, localVirtualIp: vip)
+    let peerSignature = peerRouteSignature(peerHosts)
+
+    guard vip != appliedVirtualIp || mask != appliedVirtualNetmask || effectiveGateway != appliedVirtualGateway || peerSignature != appliedPeerRouteSignature else {
+      logReapplySkip(reason: "assigned tuple unchanged: ip=\(vip), mask=\(mask), gw=\(effectiveGateway), peerRoutes=\(peerSignature)")
       return
     }
 
@@ -561,7 +592,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       remoteAddress: remoteAddress,
       virtualIp: vip,
       virtualNetmask: mask,
-      virtualGateway: effectiveGateway
+      virtualGateway: effectiveGateway,
+      peerHosts: peerHosts
     )
 
     setTunnelNetworkSettings(settings) { [weak self] error in
@@ -573,8 +605,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       self.appliedVirtualIp = vip
       self.appliedVirtualNetmask = mask
       self.appliedVirtualGateway = effectiveGateway
+      self.appliedPeerRouteSignature = peerSignature
       self.lastReapplySkipReason = ""
-      let message = "reapply assigned virtual ip success: ip=\(vip), netmask=\(mask), gateway=\(effectiveGateway), rawGateway=\(gw)"
+      let message = "reapply assigned virtual ip success: ip=\(vip), netmask=\(mask), gateway=\(effectiveGateway), rawGateway=\(gw), peerRoutes=\(peerSignature)"
       self.appendDebugEvent(message)
       NSLog("[PacketTunnel] \(message)")
     }
@@ -734,6 +767,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         "tunnelServerAddress": rustSnapshot?.currentConnectServer ?? config?.tunnelServerAddress as Any,
         "routeCount": config?.externalRoute.count ?? 0,
         "configUpdatedAt": config?.updatedAt as Any,
+        "peerVirtualIps": rustSnapshot?.peerVirtualIps as Any,
         "peerDevices": rustSnapshot?.peerDevices.map { $0.toDictionary() } ?? [],
         "currentStatus": rustSnapshot?.currentStatus as Any,
         "broadcastIp": rustSnapshot?.currentBroadcastIp as Any,
@@ -746,6 +780,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         "appliedVirtualIp": appliedVirtualIp,
         "appliedVirtualNetmask": appliedVirtualNetmask,
         "appliedVirtualGateway": appliedVirtualGateway,
+        "appliedPeerRouteSignature": appliedPeerRouteSignature,
         "debugEvents": debugEvents,
       ]
 
