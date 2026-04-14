@@ -1,62 +1,10 @@
-import Flutter
-import Foundation
-import UIKit
-#if canImport(AppIntents)
 import AppIntents
-#endif
+import Foundation
+import SwiftUI
+import WidgetKit
 
-@main
-@objc class AppDelegate: FlutterAppDelegate {
-  private let vpnChannelName = "vnt.app/vpn"
-
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-
-    if let registrar = self.registrar(forPlugin: "VntVpnChannel") {
-      let channel = FlutterMethodChannel(name: vpnChannelName, binaryMessenger: registrar.messenger())
-      channel.setMethodCallHandler { [weak self] call, result in
-        self?.handleVpnMethod(call: call, result: result)
-      }
-    }
-
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
-
-  static func toggleDefaultConfigConnectionFromShortcut() async throws -> String {
-    if isVpnRunningForShortcutToggle() {
-      VPNManager.shared.stopVpn()
-      return "已断开 VNT 连接"
-    }
-
-    let config = try loadDefaultNetworkConfigForShortcut()
-    let payload = try buildStartPayload(from: config)
-
-    let fd: Int = try await withCheckedThrowingContinuation { continuation in
-      VPNManager.shared.startVpn(with: payload) { fd, error in
-        if let error {
-          continuation.resume(throwing: error)
-        } else {
-          continuation.resume(returning: fd)
-        }
-      }
-    }
-
-    guard fd > 0 else {
-      throw NSError(
-        domain: "ShortcutVPN",
-        code: -2001,
-        userInfo: [NSLocalizedDescriptionKey: "VPN 启动失败，返回 fd=\(fd)"]
-      )
-    }
-
-    let name = (config["config_name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "默认配置"
-    return "已开始连接：\(name)"
-  }
-
-  static func isVpnRunningForShortcutToggle() -> Bool {
+private enum VpnControlService {
+  static func isVpnRunningForToggle() -> Bool {
     if VPNManager.shared.isVpnRunning() {
       return true
     }
@@ -70,7 +18,39 @@ import AppIntents
     return false
   }
 
-  static func loadDefaultNetworkConfigForShortcut() throws -> [String: Any] {
+  static func setConnection(shouldConnect: Bool) async throws {
+    let running = isVpnRunningForToggle()
+    if shouldConnect == running {
+      return
+    }
+
+    if shouldConnect {
+      let config = try loadDefaultNetworkConfig()
+      let payload = try buildStartPayload(from: config)
+
+      let fd: Int = try await withCheckedThrowingContinuation { continuation in
+        VPNManager.shared.startVpn(with: payload) { fd, error in
+          if let error {
+            continuation.resume(throwing: error)
+          } else {
+            continuation.resume(returning: fd)
+          }
+        }
+      }
+
+      guard fd > 0 else {
+        throw NSError(
+          domain: "ControlCenterVPN",
+          code: -2001,
+          userInfo: [NSLocalizedDescriptionKey: "VPN 启动失败，返回 fd=\(fd)"]
+        )
+      }
+    } else {
+      VPNManager.shared.stopVpn()
+    }
+  }
+
+  static func loadDefaultNetworkConfig() throws -> [String: Any] {
     let defaults = UserDefaults.standard
 
     let defaultKey = ["default-key", "flutter.default-key"]
@@ -80,13 +60,12 @@ import AppIntents
 
     guard let defaultKey, !defaultKey.isEmpty else {
       throw NSError(
-        domain: "ShortcutVPN",
+        domain: "ControlCenterVPN",
         code: -1001,
         userInfo: [NSLocalizedDescriptionKey: "未设置默认配置"]
       )
     }
 
-    // 优先读取 data-key-native（JSON 数组字符串），兼容 flutter. 前缀
     var configJsonList: [String] = []
     if let nativeData = ["data-key-native", "flutter.data-key-native"]
       .compactMap({ defaults.string(forKey: $0) })
@@ -96,7 +75,6 @@ import AppIntents
       configJsonList = parsed
     }
 
-    // 回退读取 data-key（StringList），兼容 flutter. 前缀与 NSArray 存储
     if configJsonList.isEmpty {
       for key in ["data-key", "flutter.data-key"] {
         if let list = defaults.array(forKey: key) as? [String], !list.isEmpty {
@@ -108,7 +86,7 @@ import AppIntents
 
     guard !configJsonList.isEmpty else {
       throw NSError(
-        domain: "ShortcutVPN",
+        domain: "ControlCenterVPN",
         code: -1002,
         userInfo: [NSLocalizedDescriptionKey: "未读取到配置列表"]
       )
@@ -116,7 +94,8 @@ import AppIntents
 
     for item in configJsonList {
       guard let itemBytes = item.data(using: .utf8),
-            let obj = try JSONSerialization.jsonObject(with: itemBytes) as? [String: Any] else {
+            let obj = try JSONSerialization.jsonObject(with: itemBytes) as? [String: Any]
+      else {
         continue
       }
       let itemKey = (obj["itemKey"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -126,7 +105,7 @@ import AppIntents
     }
 
     throw NSError(
-      domain: "ShortcutVPN",
+      domain: "ControlCenterVPN",
       code: -1003,
       userInfo: [NSLocalizedDescriptionKey: "默认配置不存在或已删除"]
     )
@@ -206,7 +185,7 @@ import AppIntents
     let data = try JSONSerialization.data(withJSONObject: map)
     guard let json = String(data: data, encoding: .utf8) else {
       throw NSError(
-        domain: "ShortcutVPN",
+        domain: "ControlCenterVPN",
         code: -3001,
         userInfo: [NSLocalizedDescriptionKey: "生成 vntConfigJson 失败"]
       )
@@ -387,97 +366,58 @@ import AppIntents
     }
     return NSNull()
   }
+}
 
-  private func handleVpnMethod(call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-    case "startVpn":
-      guard let args = call.arguments as? [String: Any] else {
-        result(FlutterError(code: "bad_args", message: "startVpn 参数无效", details: nil))
-        return
+@available(iOS 18.0, *)
+struct VntVpnControlValueProvider: ControlValueProvider {
+  var previewValue: Bool { false }
+
+  func currentValue() async throws -> Bool {
+    VpnControlService.isVpnRunningForToggle()
+  }
+}
+
+@available(iOS 18.0, *)
+struct SetDefaultVpnConnectionIntent: SetValueIntent {
+  static let title: LocalizedStringResource = "设置 VNT 连接"
+  static var openAppWhenRun: Bool = false
+
+  @Parameter(title: "连接")
+  var value: Bool
+
+  init() {}
+
+  init(value: Bool) {
+    self.value = value
+  }
+
+  func perform() async throws -> some IntentResult {
+    try await VpnControlService.setConnection(shouldConnect: value)
+    ControlCenter.shared.reloadControls(ofKind: VntVpnControlWidget.kind)
+    return .result()
+  }
+}
+
+@available(iOS 18.0, *)
+struct VntVpnControlWidget: ControlWidget {
+  static let kind = "io.mt63.v4.control.toggle"
+
+  var body: some ControlWidgetConfiguration {
+    StaticControlConfiguration(kind: Self.kind, provider: VntVpnControlValueProvider()) { isOn in
+      ControlWidgetToggle("VNT", isOn: isOn, action: SetDefaultVpnConnectionIntent()) { value in
+        Text(value ? "已连接" : "未连接")
       }
+    }
+    .displayName("VNT 连接")
+    .description("连接或断开默认配置")
+  }
+}
 
-      VPNManager.shared.startVpn(with: args) { fd, error in
-        if let error {
-          result(FlutterError(code: "start_failed", message: error.localizedDescription, details: nil))
-        } else {
-          result(fd)
-        }
-      }
-
-    case "stopVpn":
-      VPNManager.shared.stopVpn()
-      result(nil)
-
-    case "isRunning":
-      result(VPNManager.shared.isVpnRunning())
-
-    case "startVnt":
-      // iOS 场景由 Flutter 侧自行驱动配置选择与连接
-      result(VPNManager.shared.isVpnRunning())
-
-    case "stopVnt":
-      VPNManager.shared.stopVpn()
-      result(nil)
-
-    case "getVpnStatus":
-      VPNManager.shared.runtimeStatusAsync { status in
-        result(status)
-      }
-
-    case "getDeviceInfo":
-      VPNManager.shared.runtimeStatusAsync { status in
-        result([
-          "isConnected": status["isRunning"] as? Bool ?? false,
-          "configName": "",
-          "onlineCount": 0,
-          "offlineCount": 0,
-          "vpnStatus": status["vpnStatus"] as? String ?? "unknown",
-          "runtimeState": status["runtimeState"] as? String ?? "unknown",
-          "extensionState": status["extensionState"] as? String ?? "unknown",
-          "extensionUptimeSec": status["extensionUptimeSec"] as? Int ?? 0,
-        ])
-      }
-
-    case "moveTaskToBack", "isTileStart", "getTileConfigKey", "updateWidgetAndTile":
-      // Android 专有接口：iOS 侧返回空值或默认值，保持 Flutter 通道兼容
-      if call.method == "isTileStart" {
-        result(false)
-      } else {
-        result(nil)
-      }
-
-    default:
-      result(FlutterMethodNotImplemented)
+@main
+struct ControlCenterExtensionBundle: WidgetBundle {
+  var body: some Widget {
+    if #available(iOS 18.0, *) {
+      VntVpnControlWidget()
     }
   }
 }
-
-#if canImport(AppIntents)
-@available(iOS 16.0, *)
-struct ToggleDefaultConfigIntent: AppIntent {
-  static let title: LocalizedStringResource = "切换 VNT 连接"
-  static let description = IntentDescription("未连接时连接默认配置，已连接时断开")
-  static var openAppWhenRun: Bool = false
-
-  func perform() async throws -> some IntentResult & ProvidesDialog {
-    let message = try await AppDelegate.toggleDefaultConfigConnectionFromShortcut()
-    return .result(dialog: IntentDialog(stringLiteral: message))
-  }
-}
-
-@available(iOS 16.0, *)
-struct VntShortcutsProvider: AppShortcutsProvider {
-  static var appShortcuts: [AppShortcut] {
-    AppShortcut(
-      intent: ToggleDefaultConfigIntent(),
-      phrases: [
-        "切换 \(.applicationName) 连接",
-        "用 \(.applicationName) 连接默认配置",
-        "用 \(.applicationName) 断开连接",
-      ],
-      shortTitle: "切换连接",
-      systemImageName: "network"
-    )
-  }
-}
-#endif
