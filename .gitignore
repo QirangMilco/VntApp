@@ -54,6 +54,7 @@ app.*.map.json
 /config.json
 .craft-agents/
 .crystal-agent/
+.crystal-agent-dev/
 
 # Local build caches / vendored build outputs
 /rust/vnt-fork/target/

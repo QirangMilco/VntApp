@@ -133,6 +133,7 @@ class VntBox {
   bool _iosStatusRefreshing = false;
   Timer? _iosDebugPollTimer;
   String _lastIosDebugEvents = '';
+  DateTime _lastIosDebugPrintAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   VntBox({
     required this.vntApi,
@@ -349,7 +350,15 @@ class VntBox {
             (status['extensionDebugEvents'] as List?)?.join(' || ') ?? '';
         if (debugEvents.isNotEmpty && debugEvents != _lastIosDebugEvents) {
           _lastIosDebugEvents = debugEvents;
-          debugPrint('[iOS VPN] extension debug: $debugEvents');
+          final now = DateTime.now();
+          if (now.difference(_lastIosDebugPrintAt).inSeconds >= 3) {
+            _lastIosDebugPrintAt = now;
+            final maxLen = 360;
+            final printable = debugEvents.length > maxLen
+                ? '${debugEvents.substring(0, maxLen)}...'
+                : debugEvents;
+            debugPrint('[iOS VPN] extension debug: $printable');
+          }
         }
       }
     }).whenComplete(() {
@@ -362,7 +371,7 @@ class VntBox {
       return;
     }
     _iosDebugPollTimer?.cancel();
-    _iosDebugPollTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _iosDebugPollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (_closed) {
         _iosDebugPollTimer?.cancel();
         _iosDebugPollTimer = null;

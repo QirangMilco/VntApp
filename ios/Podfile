@@ -43,5 +43,17 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # 规避 iOS 系统私有框架中的 FileUtils 与 file_picker 插件同名冲突
+    if target.name == 'file_picker'
+      target.build_configurations.each do |config|
+        defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+        defs = [defs] unless defs.is_a?(Array)
+        unless defs.include?('FileUtils=VNTFilePickerFileUtils')
+          defs << 'FileUtils=VNTFilePickerFileUtils'
+        end
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+      end
+    end
   end
 end

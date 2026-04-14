@@ -217,7 +217,20 @@ final class VPNManager {
       merged["lastDisconnectErrorDomain"] = nil
       merged["lastDisconnectErrorCode"] = 0
 
+      // 仅在扩展有机会存活的状态下发送 Provider Message，避免无效查询触发 XPC 中断噪音。
+      let shouldQueryExtension = (status == .connecting || status == .connected || status == .reasserting || status == .disconnecting)
+      guard shouldQueryExtension else {
+        merged["extensionRunning"] = false
+        merged["extensionState"] = "inactive"
+        merged["extensionMessage"] = "VPN 未连接，跳过扩展状态查询"
+        completion(merged)
+        return
+      }
+
       guard let session = manager?.connection as? NETunnelProviderSession else {
+        merged["extensionRunning"] = false
+        merged["extensionState"] = "unavailable"
+        merged["extensionMessage"] = "未获取到 NETunnelProviderSession"
         completion(merged)
         return
       }
@@ -234,6 +247,9 @@ final class VPNManager {
             let data,
             let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
           else {
+            merged["extensionRunning"] = false
+            merged["extensionState"] = "unreachable"
+            merged["extensionMessage"] = "扩展未返回状态数据"
             completion(merged)
             return
           }
@@ -273,7 +289,13 @@ final class VPNManager {
           completion(merged)
         }
       } catch {
-        merged["extensionMessage"] = error.localizedDescription
+        let nsErr = error as NSError
+        merged["extensionRunning"] = false
+        merged["extensionState"] = "unreachable"
+        merged["lastDisconnectError"] = nsErr.localizedDescription
+        merged["lastDisconnectErrorDomain"] = nsErr.domain
+        merged["lastDisconnectErrorCode"] = nsErr.code
+        merged["extensionMessage"] = "扩展通信失败: \(nsErr.domain)(\(nsErr.code)) \(nsErr.localizedDescription)"
         completion(merged)
       }
     }
