@@ -12,6 +12,7 @@ import 'package:vnt_app/utils/toast_utils.dart';
 import 'package:vnt_app/file_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:vnt_app/vnt/vnt_manager.dart';
 
 class LogPage extends StatefulWidget {
   @override
@@ -26,6 +27,8 @@ class _LogPageState extends State<LogPage> {
   String? _errorMessage;
   List<String> _availableLogFiles = [];
   String? _currentLogFile;
+  bool _isIosDiagnosticMode = false;
+  Timer? _iosStatusPollTimer;
 
   @override
   void initState() {
@@ -37,11 +40,18 @@ class _LogPageState extends State<LogPage> {
   Future<void> _initializeLogReader() async {
     // 先清理旧的资源
     _fileWatchTimer?.cancel();
+    _iosStatusPollTimer?.cancel();
 
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _isIosDiagnosticMode = false;
     });
+
+    if (Platform.isIOS) {
+      await _initializeIosDiagnosticLogs();
+      return;
+    }
 
     try {
       // 使用统一的日志路径工具类获取日志目录
@@ -120,6 +130,147 @@ class _LogPageState extends State<LogPage> {
         _errorMessage = '初始化日志读取器失败: $e';
       });
     }
+  }
+
+  Future<void> _initializeIosDiagnosticLogs() async {
+    try {
+      await _refreshIosDiagnosticLogs();
+      _iosStatusPollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+        unawaited(_refreshIosDiagnosticLogs());
+      });
+    } catch (e) {
+      debugPrint('初始化 iOS 诊断日志失败: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '初始化 iOS 诊断日志失败: $e';
+      });
+    }
+  }
+
+  Future<void> _refreshIosDiagnosticLogs() async {
+    final status = await VntAppCall.getVpnStatus();
+    if (!mounted) {
+      return;
+    }
+
+    if (status == null) {
+      setState(() {
+        _isLoading = false;
+        _isIosDiagnosticMode = true;
+        _logLines
+          ..clear()
+          ..add('iOS 诊断日志获取失败：未读取到 VPN 状态。');
+      });
+      return;
+    }
+
+    final lines = _buildIosDiagnosticLogLines(status);
+    setState(() {
+      _isLoading = false;
+      _isIosDiagnosticMode = true;
+      _errorMessage = null;
+      _availableLogFiles = const [];
+      _currentLogFile = null;
+      _logReader = null;
+      _logLines
+        ..clear()
+        ..addAll(lines);
+    });
+  }
+
+  List<String> _buildIosDiagnosticLogLines(Map<String, dynamic> status) {
+    final lines = <String>[];
+    final now = DateTime.now();
+    lines.add('# iOS VPN 诊断日志');
+    lines.add('生成时间: ${_formatDateTime(now)}');
+    lines.add('日志来源: iOS PacketTunnel 扩展状态');
+    lines.add('');
+    lines.add('[概览]');
+    lines.add('vpnStatus=${status['vpnStatus'] ?? 'unknown'} raw=${status['vpnStatusRaw'] ?? '-'} isRunning=${status['isRunning'] ?? false}');
+    lines.add('runtimeState=${status['runtimeState'] ?? 'unknown'} message=${status['runtimeMessage'] ?? '-'} updatedAt=${_formatTimestamp(status['runtimeUpdatedAt'])}');
+    lines.add('extensionState=${status['extensionState'] ?? 'unknown'} message=${status['extensionMessage'] ?? '-'} updatedAt=${_formatTimestamp(status['extensionUpdatedAt'])}');
+    lines.add('lastDisconnect=${status['lastDisconnectError'] ?? '-'} domain=${status['lastDisconnectErrorDomain'] ?? '-'} code=${status['lastDisconnectErrorCode'] ?? 0}');
+    lines.add('');
+    lines.add('[连接诊断摘要]');
+    lines.add('stage=${status['extensionDiagnosticStage'] ?? '-'} stageUpdatedAt=${_formatTimestamp(status['extensionDiagnosticStageUpdatedAt'])}');
+    lines.add('waitConnectSec=${status['extensionDiagnosticWaitConnectSec'] ?? '-'} waitAssignedIpSec=${status['extensionDiagnosticWaitAssignedIpSec'] ?? '-'}');
+    lines.add('connectStartedAt=${_formatTimestamp(status['extensionDiagnosticConnectStartedAt'])} assignedVirtualIpAt=${_formatTimestamp(status['extensionDiagnosticAssignedVirtualIpAt'])}');
+    lines.add('tunnelSettingsAppliedAt=${_formatTimestamp(status['extensionDiagnosticTunnelSettingsAppliedAt'])}');
+    lines.add('firstInputPacketAt=${_formatTimestamp(status['extensionDiagnosticFirstInputPacketAt'])} firstOutputPacketAt=${_formatTimestamp(status['extensionDiagnosticFirstOutputPacketAt'])}');
+    lines.add('hasAssignedVirtualIp=${status['extensionDiagnosticHasAssignedVirtualIp'] ?? false} hasInputPacket=${status['extensionDiagnosticHasInputPacket'] ?? false} hasOutputPacket=${status['extensionDiagnosticHasOutputPacket'] ?? false}');
+    lines.add('inputErrorCount=${status['extensionDiagnosticInputErrorCount'] ?? 0} outputErrorCount=${status['extensionDiagnosticOutputErrorCount'] ?? 0} reapplySkipCount=${status['extensionDiagnosticReapplySkipCount'] ?? 0}');
+    lines.add('pullOutputErrorCount=${status['extensionDiagnosticPullOutputErrorCount'] ?? 0} lastPullOutputErrorCode=${status['extensionDiagnosticLastPullOutputErrorCode'] ?? 0}');
+    lines.add('');
+    lines.add('[网络参数]');
+    lines.add('virtualIp=${status['extensionVirtualIp'] ?? '-'} netmask=${status['extensionVirtualNetmask'] ?? '-'} gateway=${status['extensionVirtualGateway'] ?? '-'} network=${status['extensionVirtualNetwork'] ?? '-'}');
+    lines.add('appliedVirtualIp=${status['extensionAppliedVirtualIp'] ?? '-'} appliedNetmask=${status['extensionAppliedVirtualNetmask'] ?? '-'} appliedGateway=${status['extensionAppliedVirtualGateway'] ?? '-'}');
+    lines.add('tunnelServer=${status['extensionTunnelServerAddress'] ?? '-'} routeCount=${status['extensionRouteCount'] ?? 0} currentStatus=${status['extensionCurrentStatus'] ?? '-'}');
+    lines.add('');
+    lines.add('[Rust 数据面]');
+    lines.add('rustLastError=${status['extensionRustLastError'] ?? '-'} rustLastErrorCode=${status['extensionRustLastErrorCode'] ?? 0} providerLastErrorCode=${status['extensionLastErrorCode'] ?? 0}');
+    lines.add('packetsFromSystem=${status['extensionPacketsFromSystem'] ?? 0} packetsToSystem=${status['extensionPacketsToSystem'] ?? 0}');
+    lines.add('bytesFromSystem=${status['extensionBytesFromSystem'] ?? 0} bytesToSystem=${status['extensionBytesToSystem'] ?? 0}');
+    lines.add('outputQueueLen=${status['extensionOutputQueueLen'] ?? 0} outputDropped=${status['extensionOutputDropped'] ?? 0} pollErrorCount=${status['extensionPollErrorCount'] ?? 0}');
+    lines.add('natType=${status['extensionNatType'] ?? '-'} localIpv4=${status['extensionLocalIpv4'] ?? '-'} ipv6=${status['extensionIpv6'] ?? '-'}');
+    lines.add('publicIps=${_formatList(status['extensionPublicIps'])}');
+    lines.add('peerDevices=${_countList(status['extensionPeerDevices'])} peerVirtualIps=${_countList(status['extensionPeerVirtualIps'])} uptimeSec=${status['extensionUptimeSec'] ?? 0}');
+    lines.add('');
+    lines.add('[调试事件]');
+
+    final debugEvents = (status['extensionDebugEvents'] as List?) ?? const [];
+    if (debugEvents.isEmpty) {
+      lines.add('(暂无扩展调试事件)');
+    } else {
+      for (final event in debugEvents) {
+        lines.add(_formatDebugEventLine(event));
+      }
+    }
+    return lines;
+  }
+
+  String _formatDebugEventLine(dynamic raw) {
+    final value = raw?.toString() ?? '';
+    final match = RegExp(r'^(\d{10,})\s+(.*)$').firstMatch(value);
+    if (match == null) {
+      return value;
+    }
+    final millis = int.tryParse(match.group(1)!);
+    final message = match.group(2) ?? '';
+    if (millis == null) {
+      return value;
+    }
+    return '${_formatDateTime(DateTime.fromMillisecondsSinceEpoch(millis))} $message';
+  }
+
+  String _formatTimestamp(dynamic value) {
+    if (value == null) {
+      return '-';
+    }
+    if (value is int) {
+      return _formatDateTime(DateTime.fromMillisecondsSinceEpoch(value));
+    }
+    if (value is double) {
+      return _formatDateTime(DateTime.fromMillisecondsSinceEpoch(value.toInt()));
+    }
+    return value.toString();
+  }
+
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    String three(int n) => n.toString().padLeft(3, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}:${two(local.second)}.${three(local.millisecond)}';
+  }
+
+  String _formatList(dynamic value) {
+    if (value is List && value.isNotEmpty) {
+      return value.join(', ');
+    }
+    return '-';
+  }
+
+  int _countList(dynamic value) {
+    return value is List ? value.length : 0;
   }
 
   // 滚动到底部的辅助方法
@@ -249,6 +400,7 @@ class _LogPageState extends State<LogPage> {
     _scrollController.dispose();
     // 清理文件监听
     _fileWatchTimer?.cancel();
+    _iosStatusPollTimer?.cancel();
     super.dispose();
   }
 
@@ -340,8 +492,8 @@ class _LogPageState extends State<LogPage> {
       ),
       body: Column(
         children: [
-          // 实时状态指示器（文件监听）
-          if (_logLines.isNotEmpty && _fileWatchTimer != null)
+          // 实时状态指示器（文件监听 / iOS 状态轮询）
+          if (_logLines.isNotEmpty && (_fileWatchTimer != null || _iosStatusPollTimer != null))
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               color: (isDark ? Colors.green.shade900 : Colors.green.shade50).withOpacity(0.5),
@@ -354,7 +506,7 @@ class _LogPageState extends State<LogPage> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '实时监听中 - 新日志将自动显示',
+                    _isIosDiagnosticMode ? '实时刷新中 - iOS 诊断状态将自动更新' : '实时监听中 - 新日志将自动显示',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? Colors.green.shade200 : Colors.green.shade800,
@@ -526,18 +678,7 @@ class _LogPageState extends State<LogPage> {
         return;
       }
 
-      String allLogs = '';
-
-      // 所有平台统一使用文件日志模式：复制所有日志文件
-      for (var logFile in _availableLogFiles) {
-        final file = File(logFile);
-        if (await file.exists()) {
-          final content = await file.readAsString();
-          allLogs += '=== ${path.basename(logFile)} ===\n';
-          allLogs += content;
-          allLogs += '\n\n';
-        }
-      }
+      String allLogs = await _collectLogsText();
 
       if (allLogs.trim().isEmpty) {
         if (mounted) {
@@ -669,18 +810,7 @@ class _LogPageState extends State<LogPage> {
         final filePath = '${directory.path}/$fileName';
 
         final file = File(filePath);
-
-        // 合并所有日志文件
-        String allLogs = '';
-        for (var logFile in _availableLogFiles) {
-          final logFileEntity = File(logFile);
-          if (await logFileEntity.exists()) {
-            final content = await logFileEntity.readAsString();
-            allLogs += '=== ${path.basename(logFile)} ===\n';
-            allLogs += content;
-            allLogs += '\n\n';
-          }
-        }
+        final allLogs = await _collectLogsText();
         await file.writeAsString(allLogs);
 
         final success = await FileSaver.copyFile(
@@ -720,17 +850,7 @@ class _LogPageState extends State<LogPage> {
           return;
         }
 
-        // 合并所有日志文件
-        String allLogs = '';
-        for (var logFile in _availableLogFiles) {
-          final file = File(logFile);
-          if (await file.exists()) {
-            final content = await file.readAsString();
-            allLogs += '=== ${path.basename(logFile)} ===\n';
-            allLogs += content;
-            allLogs += '\n\n';
-          }
-        }
+        final allLogs = await _collectLogsText();
 
         // 保存到用户选择的位置
         final saveFile = File(savePath);
@@ -789,6 +909,17 @@ class _LogPageState extends State<LogPage> {
     if (confirmed != true) return;
 
     try {
+      if (_isIosDiagnosticMode) {
+        setState(() {
+          _logLines.clear();
+        });
+        if (mounted) {
+          showTopToast(context, '已清空当前诊断视图，下次刷新会重新获取状态', isSuccess: true);
+        }
+        await _refreshIosDiagnosticLogs();
+        return;
+      }
+
       // 所有平台统一清空日志文件内容
       int clearedCount = 0;
       List<String> failedFiles = [];
@@ -836,6 +967,24 @@ class _LogPageState extends State<LogPage> {
         showTopToast(context, '清空失败: $e', isSuccess: false);
       }
     }
+  }
+
+  Future<String> _collectLogsText() async {
+    if (_isIosDiagnosticMode) {
+      return _logLines.join('\n');
+    }
+
+    String allLogs = '';
+    for (var logFile in _availableLogFiles) {
+      final file = File(logFile);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        allLogs += '=== ${path.basename(logFile)} ===\n';
+        allLogs += content;
+        allLogs += '\n\n';
+      }
+    }
+    return allLogs;
   }
 }
 

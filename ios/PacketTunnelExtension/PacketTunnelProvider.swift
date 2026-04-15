@@ -88,12 +88,36 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private var lastSnapshotDiagLogAt: Date = .distantPast
   private var appliedPeerRouteSignature: String = ""
   private var debugEvents: [String] = []
+  private var connectionStage: String = "idle"
+  private var connectionStageUpdatedAt: Date = .distantPast
+  private var connectStartedAt: Date?
+  private var waitingForAssignedIpSince: Date?
+  private var assignedVirtualIpAt: Date?
+  private var tunnelSettingsAppliedAt: Date?
+  private var firstInputPacketAt: Date?
+  private var firstOutputPacketAt: Date?
+  private var inputErrorCount: UInt64 = 0
+  private var outputErrorCount: UInt64 = 0
+  private var reapplySkipCount: UInt64 = 0
+  private var pullOutputErrorCount: UInt64 = 0
+  private var lastPullOutputErrorCode: Int32 = 0
 
   override func startTunnel(
     options: [String: NSObject]?,
     completionHandler: @escaping (Error?) -> Void
   ) {
-    NSLog("[PacketTunnel] startTunnel called")
+    connectStartedAt = Date()
+    waitingForAssignedIpSince = nil
+    assignedVirtualIpAt = nil
+    tunnelSettingsAppliedAt = nil
+    firstInputPacketAt = nil
+    firstOutputPacketAt = nil
+    inputErrorCount = 0
+    outputErrorCount = 0
+    reapplySkipCount = 0
+    pullOutputErrorCount = 0
+    lastPullOutputErrorCode = 0
+    markStage("starting", detail: "startTunnel called", forceLog: true)
 
     if
       let proto = protocolConfiguration as? NETunnelProviderProtocol,
@@ -101,7 +125,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       !appGroup.isEmpty
     {
       SharedTunnelConfig.appGroupOverride = appGroup
-      NSLog("[PacketTunnel] appGroup override from providerConfiguration: \(appGroup)")
+      recordEvent("appGroup override from providerConfiguration: \(appGroup)")
     }
 
     SharedTunnelRuntimeState.save(state: "starting")
@@ -110,24 +134,26 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     if let loaded = SharedTunnelConfig.loadFromAppGroup() {
       config = loaded
     } else if let fallback = fallbackConfigFromProviderConfiguration() {
-      NSLog("[PacketTunnel] load shared config failed, fallback from providerConfiguration, appGroup=\(SharedTunnelConfig.appGroup)")
+      recordEvent("load shared config failed, fallback from providerConfiguration, appGroup=\(SharedTunnelConfig.appGroup)")
       config = fallback
     } else {
-      NSLog("[PacketTunnel] load shared config failed, appGroup=\(SharedTunnelConfig.appGroup)")
+      recordEvent("load shared config failed, appGroup=\(SharedTunnelConfig.appGroup)")
       SharedTunnelRuntimeState.save(state: "error", message: "未读取到共享隧道配置")
       completionHandler(NSError(domain: "PacketTunnelProvider", code: -1, userInfo: [NSLocalizedDescriptionKey: "未读取到共享隧道配置"]))
       return
     }
-    NSLog("[PacketTunnel] config loaded: ip=\(config.virtualIp), netmask=\(config.virtualNetmask), gateway=\(config.virtualGateway), routeCount=\(config.externalRoute.count), mtu=\(config.mtu)")
+    recordEvent("config loaded: ip=\(config.virtualIp), netmask=\(config.virtualNetmask), gateway=\(config.virtualGateway), routeCount=\(config.externalRoute.count), mtu=\(config.mtu)")
 
     let remoteAddress = normalizeTunnelRemoteAddress(config.tunnelServerAddress)
-    NSLog("[PacketTunnel] tunnelRemoteAddress normalized: raw=\(config.tunnelServerAddress ?? "nil"), normalized=\(remoteAddress)")
+    recordEvent("tunnelRemoteAddress normalized: raw=\(config.tunnelServerAddress ?? "nil"), normalized=\(remoteAddress)")
 
     let configuredIp = config.virtualIp.trimmingCharacters(in: .whitespacesAndNewlines)
     let configuredMask = config.virtualNetmask.trimmingCharacters(in: .whitespacesAndNewlines)
     let configuredGateway = config.virtualGateway.trimmingCharacters(in: .whitespacesAndNewlines)
 
     if !configuredIp.isEmpty, configuredIp != "0.0.0.0", !configuredMask.isEmpty, configuredMask != "0.0.0.0", !configuredGateway.isEmpty, configuredGateway != "0.0.0.0" {
+      assignedVirtualIpAt = Date()
+      markStage("config-ready", detail: "static virtual ip available")
       activateTunnel(
         config: config,
         remoteAddress: remoteAddress,
@@ -141,13 +167,14 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     }
 
     SharedTunnelRuntimeState.save(state: "starting", message: "等待服务端分配虚拟 IP")
-    NSLog("[PacketTunnel] virtual IP 未配置，等待服务端分配")
+    waitingForAssignedIpSince = Date()
+    markStage("waiting-assigned-ip", detail: "virtual IP 未配置，等待服务端分配", forceLog: true)
 
     do {
       try bootstrapRustDataPlane(config: config)
-      NSLog("[PacketTunnel] rust dataplane started (waiting assigned virtual ip)")
+      markStage("rust-started", detail: "waiting assigned virtual ip")
     } catch {
-      NSLog("[PacketTunnel] rust dataplane start failed: \(error.localizedDescription)")
+      markStage("error", detail: "rust dataplane start failed: \(error.localizedDescription)", forceLog: true)
       SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
       completionHandler(error)
       return
@@ -162,12 +189,14 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       guard let tuple else {
         self.teardownRustDataPlane()
         let err = NSError(domain: "PacketTunnelProvider", code: -12, userInfo: [NSLocalizedDescriptionKey: "等待服务端分配虚拟 IP 超时"])
-        NSLog("[PacketTunnel] \(err.localizedDescription)")
+        self.markStage("timeout", detail: err.localizedDescription, forceLog: true)
         SharedTunnelRuntimeState.save(state: "error", message: err.localizedDescription)
         completionHandler(err)
         return
       }
 
+      self.assignedVirtualIpAt = Date()
+      self.markStage("assigned-ip", detail: "received assigned virtual ip=\(tuple.ip)", forceLog: true)
       self.activateTunnel(
         config: config,
         remoteAddress: remoteAddress,
@@ -183,6 +212,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
   override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
     running = false
+    markStage("stopped", detail: "stopTunnel reason=\(reason.rawValue)", forceLog: true)
     stopRustOutputLoop()
     teardownRustDataPlane()
     startedAt = nil
@@ -223,6 +253,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
         self.packetsFromSystem += UInt64(packets.count)
         self.bytesFromSystem += UInt64(packets.reduce(0) { $0 + $1.count })
+        self.recordFirstInputPacketIfNeeded()
         self.handlePacketsFromSystem(packets, protocols: protocols)
         self.beginReadingPackets()
       }
@@ -232,9 +263,70 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private func appendDebugEvent(_ message: String) {
     let line = "\(Int(Date().timeIntervalSince1970 * 1000)) \(message)"
     debugEvents.append(line)
-    if debugEvents.count > 60 {
-      debugEvents.removeFirst(debugEvents.count - 60)
+    if debugEvents.count > 200 {
+      debugEvents.removeFirst(debugEvents.count - 200)
     }
+  }
+
+  private func recordEvent(_ message: String) {
+    appendDebugEvent(message)
+    NSLog("[PacketTunnel] \(message)")
+  }
+
+  private func markStage(_ stage: String, detail: String? = nil, forceLog: Bool = false) {
+    let changed = connectionStage != stage
+    connectionStage = stage
+    if changed {
+      connectionStageUpdatedAt = Date()
+    } else if connectionStageUpdatedAt == .distantPast {
+      connectionStageUpdatedAt = Date()
+    }
+    guard changed || forceLog else { return }
+    if let detail, !detail.isEmpty {
+      recordEvent("stage -> \(stage): \(detail)")
+    } else {
+      recordEvent("stage -> \(stage)")
+    }
+  }
+
+  private func recordFirstInputPacketIfNeeded() {
+    guard firstInputPacketAt == nil else { return }
+    firstInputPacketAt = Date()
+    recordEvent("first input packet received")
+  }
+
+  private func recordFirstOutputPacketIfNeeded() {
+    guard firstOutputPacketAt == nil else { return }
+    firstOutputPacketAt = Date()
+    recordEvent("first output packet delivered")
+  }
+
+  private func secondsSince(_ date: Date?) -> Int? {
+    guard let date else { return nil }
+    return max(0, Int(Date().timeIntervalSince(date)))
+  }
+
+  private func diagnosticSummary() -> [String: Any] {
+    return [
+      "stage": connectionStage,
+      "stageUpdatedAt": connectionStageUpdatedAt == .distantPast ? NSNull() : Int(connectionStageUpdatedAt.timeIntervalSince1970 * 1000),
+      "connectStartedAt": connectStartedAt.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "waitAssignedIpSince": waitingForAssignedIpSince.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "assignedVirtualIpAt": assignedVirtualIpAt.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "tunnelSettingsAppliedAt": tunnelSettingsAppliedAt.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "firstInputPacketAt": firstInputPacketAt.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "firstOutputPacketAt": firstOutputPacketAt.map { Int($0.timeIntervalSince1970 * 1000) } as Any,
+      "waitConnectSec": secondsSince(connectStartedAt) as Any,
+      "waitAssignedIpSec": secondsSince(waitingForAssignedIpSince) as Any,
+      "hasAssignedVirtualIp": assignedVirtualIpAt != nil,
+      "hasInputPacket": firstInputPacketAt != nil,
+      "hasOutputPacket": firstOutputPacketAt != nil,
+      "inputErrorCount": inputErrorCount,
+      "outputErrorCount": outputErrorCount,
+      "reapplySkipCount": reapplySkipCount,
+      "pullOutputErrorCount": pullOutputErrorCount,
+      "lastPullOutputErrorCode": lastPullOutputErrorCode,
+    ]
   }
 
   private func packetSummary(_ packet: Data, protocolNumber: Int32) -> String {
@@ -305,6 +397,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     lastInputErrorCode = code
     lastInputErrorAt = now
 
+    inputErrorCount += 1
     if code == -5 {
       SharedTunnelRuntimeState.save(state: "running", message: "Rust 入包告警: \(code)")
       return
@@ -320,6 +413,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     lastOutputErrorCode = code
     lastOutputErrorAt = now
+    outputErrorCount += 1
     SharedTunnelRuntimeState.save(state: "error", message: "Rust 出包失败: \(code)")
   }
 
@@ -330,8 +424,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       let code = RustDataPlaneBridge.shared.input(packet: packet, protocolNumber: proto)
       if code != 0 {
         let message = "input packet failed: code=\(code), summary=\(packetSummary(packet, protocolNumber: proto))"
-        appendDebugEvent(message)
-        NSLog("[PacketTunnel] \(message)")
+        recordEvent(message)
         reportInputError(code: code)
       }
     }
@@ -341,6 +434,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     guard running else { return }
     guard !packets.isEmpty, packets.count == protocols.count else { return }
     logOutputBatch(packets, protocols: protocols)
+    recordFirstOutputPacketIfNeeded()
     packetsToSystem += UInt64(packets.count)
     bytesToSystem += UInt64(packets.reduce(0) { $0 + $1.count })
     _ = RustDataPlaneBridge.shared.reportOutput(count: UInt64(packets.count))
@@ -373,7 +467,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       }
 
       if let error {
-        NSLog("[PacketTunnel] setTunnelNetworkSettings failed: \(error.localizedDescription)")
+        self.markStage("error", detail: "setTunnelNetworkSettings failed: \(error.localizedDescription)", forceLog: true)
         if rustAlreadyStarted {
           self.teardownRustDataPlane()
         }
@@ -384,6 +478,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
       self.running = true
       self.startedAt = Date()
+      self.tunnelSettingsAppliedAt = Date()
       self.packetsFromSystem = 0
       self.packetsToSystem = 0
       self.bytesFromSystem = 0
@@ -403,9 +498,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       if !rustAlreadyStarted {
         do {
           try self.bootstrapRustDataPlane(config: config)
-          NSLog("[PacketTunnel] rust dataplane started")
+          self.markStage("rust-started", detail: "tunnel settings applied")
         } catch {
-          NSLog("[PacketTunnel] rust dataplane start failed: \(error.localizedDescription)")
+          self.markStage("error", detail: "rust dataplane start failed: \(error.localizedDescription)", forceLog: true)
           self.running = false
           SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
           completionHandler(error)
@@ -414,9 +509,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       }
 
       SharedTunnelRuntimeState.save(state: "running")
+      self.markStage("running", detail: "appliedVip=\(virtualIp), peerRoutes=\(self.appliedPeerRouteSignature)", forceLog: true)
       self.beginReadingPackets()
       self.beginRustOutputLoop()
-      NSLog("[PacketTunnel] tunnel running, appliedVip=\(virtualIp), peerRoutes=\(self.appliedPeerRouteSignature)")
       completionHandler(nil)
     }
   }
@@ -461,6 +556,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         let peerHosts = self.peerHosts(from: snapshot, localVirtualIp: vip)
 
         if !vip.isEmpty, vip != "0.0.0.0", !mask.isEmpty, mask != "0.0.0.0", !gw.isEmpty {
+          self.assignedVirtualIpAt = self.assignedVirtualIpAt ?? Date()
           completion((vip, mask, gw, peerHosts))
           return
         }
@@ -493,7 +589,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     if includedRoutes.isEmpty {
       let network = config.virtualNetwork ?? Self.networkAddress(ip: virtualIp, netmask: virtualNetmask)
       includedRoutes = [NEIPv4Route(destinationAddress: network, subnetMask: virtualNetmask)]
-      NSLog("[PacketTunnel] no externalRoute, fallback to virtual network route: \(network)/\(virtualNetmask)")
+      recordEvent("no externalRoute, fallback to virtual network route: \(network)/\(virtualNetmask)")
     }
 
     var routeKeys = Set(includedRoutes.map { "\($0.destinationAddress)/\($0.destinationSubnetMask)" })
@@ -599,7 +695,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     setTunnelNetworkSettings(settings) { [weak self] error in
       guard let self else { return }
       if let error {
-        NSLog("[PacketTunnel] reapply assigned virtual ip failed: \(error.localizedDescription)")
+        self.recordEvent("reapply assigned virtual ip failed: \(error.localizedDescription)")
         return
       }
       self.appliedVirtualIp = vip
@@ -608,20 +704,19 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       self.appliedPeerRouteSignature = peerSignature
       self.lastReapplySkipReason = ""
       let message = "reapply assigned virtual ip success: ip=\(vip), netmask=\(mask), gateway=\(effectiveGateway), rawGateway=\(gw), peerRoutes=\(peerSignature)"
-      self.appendDebugEvent(message)
-      NSLog("[PacketTunnel] \(message)")
+      self.recordEvent(message)
     }
   }
 
   private func logReapplySkip(reason: String) {
+    reapplySkipCount += 1
     let now = Date()
     if reason == lastReapplySkipReason && now.timeIntervalSince(lastReapplySkipAt) < 3 {
       return
     }
     lastReapplySkipReason = reason
     lastReapplySkipAt = now
-    appendDebugEvent("reapply assigned virtual ip skipped: \(reason)")
-    NSLog("[PacketTunnel] reapply assigned virtual ip skipped: \(reason)")
+    recordEvent("reapply assigned virtual ip skipped: \(reason)")
   }
 
   private func beginRustOutputLoop() {
@@ -672,6 +767,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         break
       }
       if result.code != 0 {
+        pullOutputErrorCount += 1
+        lastPullOutputErrorCode = result.code
         consecutiveErrors += 1
         if consecutiveErrors >= 3 {
           reportOutputError(code: result.code)
@@ -700,7 +797,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     guard let dict = proto.providerConfiguration?["tunnelConfig"] as? [String: Any] else {
       return nil
     }
-    NSLog("[PacketTunnel] using fallback tunnelConfig from providerConfiguration")
+    recordEvent("using fallback tunnelConfig from providerConfiguration")
     return SharedTunnelConfig(dict: dict)
   }
 
@@ -742,6 +839,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       let rustStats = RustDataPlaneBridge.shared.stats()
       let rustSnapshot = RustDataPlaneBridge.shared.snapshot()
       let config = SharedTunnelConfig.loadFromAppGroup()
+      let diag = diagnosticSummary()
       let payload: [String: Any] = [
         "running": rustStats?.running ?? running,
         "state": shared?.state ?? "unknown",
@@ -782,6 +880,24 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         "appliedVirtualGateway": appliedVirtualGateway,
         "appliedPeerRouteSignature": appliedPeerRouteSignature,
         "debugEvents": debugEvents,
+        "diagnosticStage": diag["stage"] as Any,
+        "diagnosticStageUpdatedAt": diag["stageUpdatedAt"] as Any,
+        "diagnosticConnectStartedAt": diag["connectStartedAt"] as Any,
+        "diagnosticWaitAssignedIpSince": diag["waitAssignedIpSince"] as Any,
+        "diagnosticAssignedVirtualIpAt": diag["assignedVirtualIpAt"] as Any,
+        "diagnosticTunnelSettingsAppliedAt": diag["tunnelSettingsAppliedAt"] as Any,
+        "diagnosticFirstInputPacketAt": diag["firstInputPacketAt"] as Any,
+        "diagnosticFirstOutputPacketAt": diag["firstOutputPacketAt"] as Any,
+        "diagnosticWaitConnectSec": diag["waitConnectSec"] as Any,
+        "diagnosticWaitAssignedIpSec": diag["waitAssignedIpSec"] as Any,
+        "diagnosticHasAssignedVirtualIp": diag["hasAssignedVirtualIp"] as Any,
+        "diagnosticHasInputPacket": diag["hasInputPacket"] as Any,
+        "diagnosticHasOutputPacket": diag["hasOutputPacket"] as Any,
+        "diagnosticInputErrorCount": diag["inputErrorCount"] as Any,
+        "diagnosticOutputErrorCount": diag["outputErrorCount"] as Any,
+        "diagnosticReapplySkipCount": diag["reapplySkipCount"] as Any,
+        "diagnosticPullOutputErrorCount": diag["pullOutputErrorCount"] as Any,
+        "diagnosticLastPullOutputErrorCode": diag["lastPullOutputErrorCode"] as Any,
       ]
 
       if let data = try? JSONSerialization.data(withJSONObject: payload, options: []) {
