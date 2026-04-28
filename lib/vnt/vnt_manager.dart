@@ -991,10 +991,26 @@ class VntAppCall {
     }
   }
 
+  static Future<String?> getIosSharedLogDirectory() async {
+    if (!Platform.isIOS) {
+      return null;
+    }
+    try {
+      final path = await VntAppCall.channel.invokeMethod('getIosSharedLogDirectory');
+      if (path is String && path.isNotEmpty) {
+        return path;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[iOS VPN] getIosSharedLogDirectory 调用失败: $e');
+      return null;
+    }
+  }
+
   /// 更新磁贴和小组件状态
   /// @param isConnected 是否已连接
   static Future<void> updateWidgetAndTile(bool isConnected) async {
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid && !Platform.isIOS) {
       return;
     }
     try {

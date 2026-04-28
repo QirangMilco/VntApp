@@ -1,6 +1,7 @@
 import Flutter
 import Foundation
 import UIKit
+import WidgetKit
 #if canImport(AppIntents)
 import AppIntents
 #endif
@@ -8,6 +9,25 @@ import AppIntents
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   private let vpnChannelName = "vnt.app/vpn"
+  private var isProcessingControlCenterCommand = false
+
+  private static var controlCenterKind: String {
+    if let value = Bundle.main.object(forInfoDictionaryKey: "CONTROL_WIDGET_KIND") as? String {
+      let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !normalized.isEmpty, !normalized.contains("$(") {
+        return normalized
+      }
+    }
+
+    let appBundleId = Bundle.main.bundleIdentifier ?? "com.example.vntapp"
+    return "\(appBundleId).control-extension.toggle"
+  }
+
+  @available(iOS 18.0, *)
+  private static func reloadControlCenterWidget(reason: String) {
+    NSLog("[ControlCenter] reloadControls reason=\(reason) kind=\(controlCenterKind)")
+    ControlCenter.shared.reloadControls(ofKind: controlCenterKind)
+  }
 
   override func application(
     _ application: UIApplication,
@@ -21,6 +41,8 @@ import AppIntents
         self?.handleVpnMethod(call: call, result: result)
       }
     }
+
+    prepareDefaultVpnForControlCenter(reason: "app-launch")
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -57,17 +79,7 @@ import AppIntents
   }
 
   static func isVpnRunningForShortcutToggle() -> Bool {
-    if VPNManager.shared.isVpnRunning() {
-      return true
-    }
-
-    if let runtime = SharedTunnelRuntimeState.load()?.state.lowercased() {
-      if runtime == "running" || runtime == "starting" {
-        return true
-      }
-    }
-
-    return false
+    VPNManager.shared.isVpnRunning()
   }
 
   static func loadDefaultNetworkConfigForShortcut() throws -> [String: Any] {
@@ -388,7 +400,128 @@ import AppIntents
     return NSNull()
   }
 
+  private func prepareDefaultVpnForControlCenter(reason: String) {
+    do {
+      let config = try AppDelegate.loadDefaultNetworkConfigForShortcut()
+      let payload = try AppDelegate.buildStartPayload(from: config)
+      VPNManager.shared.prepareVpn(with: payload) { error in
+        if let error {
+          NSLog("[ControlCenter] prepare default VPN failed reason=\(reason) error=\(error.localizedDescription)")
+          SharedTunnelRuntimeState.save(state: "error", message: "预配置 VPN 失败: \(error.localizedDescription)")
+        } else {
+          NSLog("[ControlCenter] prepare default VPN completed reason=\(reason)")
+        }
+        if #available(iOS 18.0, *) {
+          Self.reloadControlCenterWidget(reason: "prepare-default-vpn")
+        }
+      }
+    } catch {
+      NSLog("[ControlCenter] prepare default VPN skipped reason=\(reason) error=\(error.localizedDescription)")
+    }
+  }
+
+  private func syncControlCenterPreferences(arguments: Any?) throws {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else {
+      throw NSError(domain: "ControlCenterPrefs", code: -1, userInfo: [NSLocalizedDescriptionKey: "无法访问 App Group: \(SharedTunnelConfig.appGroup)"])
+    }
+
+    guard let args = arguments as? [String: Any] else {
+      throw NSError(domain: "ControlCenterPrefs", code: -2, userInfo: [NSLocalizedDescriptionKey: "syncControlCenterPreferences 参数无效"])
+    }
+
+    if let defaultKey = args["defaultKey"] as? String {
+      defaults.set(defaultKey, forKey: "default-key")
+      defaults.set(defaultKey, forKey: "flutter.default-key")
+    }
+
+    if let configJsonList = args["configJsonList"] as? [String] {
+      defaults.set(configJsonList, forKey: "data-key")
+      defaults.set(configJsonList, forKey: "flutter.data-key")
+      if let data = try? JSONSerialization.data(withJSONObject: configJsonList),
+         let json = String(data: data, encoding: .utf8) {
+        defaults.set(json, forKey: "data-key-native")
+        defaults.set(json, forKey: "flutter.data-key-native")
+      }
+    }
+
+    NSLog("[ControlCenter] synced preferences appGroup=\(SharedTunnelConfig.appGroup) defaultKey=\(defaults.string(forKey: "default-key") ?? "nil") dataCount=\((defaults.array(forKey: "data-key") as? [String])?.count ?? 0)")
+    prepareDefaultVpnForControlCenter(reason: "sync-preferences")
+    if #available(iOS 18.0, *) {
+      Self.reloadControlCenterWidget(reason: "sync-preferences")
+    }
+  }
+
+  private func processControlCenterCommandIfNeeded() {
+    guard !isProcessingControlCenterCommand else { return }
+    guard let desired = SharedControlCommand.loadDesiredConnection() else { return }
+    let source = SharedControlCommand.loadCommandSource() ?? "unknown"
+    let updatedAt = SharedControlCommand.loadCommandUpdatedAt() ?? 0
+    let age = Date().timeIntervalSince1970 - updatedAt
+    if age > 30 {
+      NSLog("[ControlCenter] clear stale command desired=\(desired) source=\(source) age=\(age)")
+      SharedControlCommand.clearDesiredConnection()
+      return
+    }
+
+    isProcessingControlCenterCommand = true
+    SharedControlCommand.clearDesiredConnection()
+
+    let running = AppDelegate.isVpnRunningForShortcutToggle()
+    NSLog("[ControlCenter] processing command desired=\(desired) running=\(running) source=\(source)")
+
+    if source == "control-extension" {
+      NSLog("[ControlCenter] applying prepared control-extension command desired=\(desired)")
+      VPNManager.shared.setPreparedVpnConnection(shouldConnect: desired) { [weak self] fd, error in
+        defer { self?.isProcessingControlCenterCommand = false }
+        if let error {
+          NSLog("[ControlCenter] prepared command failed fd=\(fd) error=\(error.localizedDescription)")
+          SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+        } else {
+          NSLog("[ControlCenter] prepared command completed fd=\(fd)")
+        }
+        if #available(iOS 18.0, *) {
+          Self.reloadControlCenterWidget(reason: "prepared-command-completed")
+        }
+      }
+      return
+    }
+
+    guard desired != running else {
+      isProcessingControlCenterCommand = false
+      NSLog("[ControlCenter] command ignored because desired already matches running")
+      return
+    }
+
+    if desired {
+      do {
+        let config = try AppDelegate.loadDefaultNetworkConfigForShortcut()
+        let payload = try AppDelegate.buildStartPayload(from: config)
+        VPNManager.shared.startVpn(with: payload) { [weak self] fd, error in
+          defer { self?.isProcessingControlCenterCommand = false }
+          if let error {
+            NSLog("[ControlCenter] start command failed fd=\(fd) error=\(error.localizedDescription)")
+            SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+          } else {
+            NSLog("[ControlCenter] start command completed fd=\(fd)")
+          }
+          if #available(iOS 18.0, *) {
+            Self.reloadControlCenterWidget(reason: "command-start-completed")
+          }
+        }
+      } catch {
+        isProcessingControlCenterCommand = false
+        NSLog("[ControlCenter] start command payload failed error=\(error.localizedDescription)")
+        SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+      }
+    } else {
+      NSLog("[ControlCenter] stop command invoked")
+      VPNManager.shared.stopVpn()
+      isProcessingControlCenterCommand = false
+    }
+  }
+
   private func handleVpnMethod(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    processControlCenterCommandIfNeeded()
     switch call.method {
     case "startVpn":
       guard let args = call.arguments as? [String: Any] else {
@@ -420,9 +553,16 @@ import AppIntents
       result(nil)
 
     case "getVpnStatus":
+      processControlCenterCommandIfNeeded()
       VPNManager.shared.runtimeStatusAsync { status in
+        if #available(iOS 18.0, *) {
+          Self.reloadControlCenterWidget(reason: "get-vpn-status")
+        }
         result(status)
       }
+
+    case "getIosSharedLogDirectory":
+      result(VPNManager.shared.sharedLogDirectory())
 
     case "getDeviceInfo":
       VPNManager.shared.runtimeStatusAsync { status in
@@ -438,7 +578,21 @@ import AppIntents
         ])
       }
 
-    case "moveTaskToBack", "isTileStart", "getTileConfigKey", "updateWidgetAndTile":
+    case "syncControlCenterPreferences":
+      do {
+        try syncControlCenterPreferences(arguments: call.arguments)
+        result(nil)
+      } catch {
+        result(FlutterError(code: "sync_failed", message: error.localizedDescription, details: nil))
+      }
+
+    case "updateWidgetAndTile":
+      if #available(iOS 18.0, *) {
+        Self.reloadControlCenterWidget(reason: "update-widget-and-tile")
+      }
+      result(nil)
+
+    case "moveTaskToBack", "isTileStart", "getTileConfigKey":
       // Android 专有接口：iOS 侧返回空值或默认值，保持 Flutter 通道兼容
       if call.method == "isTileStart" {
         result(false)

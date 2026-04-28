@@ -17,7 +17,6 @@ struct SharedTunnelRuntimeState: Codable {
     let value = SharedTunnelRuntimeState(state: state, message: message, updatedAt: Date().timeIntervalSince1970)
     guard let data = try? JSONEncoder().encode(value) else { return }
     defaults.set(data, forKey: storeKey)
-    defaults.synchronize()
   }
 
   static func load() -> SharedTunnelRuntimeState? {
@@ -33,7 +32,43 @@ struct SharedTunnelRuntimeState: Codable {
   static func clear() {
     guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return }
     defaults.removeObject(forKey: storeKey)
-    defaults.synchronize()
+  }
+}
+
+struct SharedControlCommand {
+  static let desiredConnectionKey = "vnt.shared.control.desiredConnection"
+  static let commandUpdatedAtKey = "vnt.shared.control.updatedAt"
+  static let commandSourceKey = "vnt.shared.control.source"
+
+  static func saveDesiredConnection(_ shouldConnect: Bool, source: String = "app") {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return }
+    defaults.set(shouldConnect, forKey: desiredConnectionKey)
+    defaults.set(Date().timeIntervalSince1970, forKey: commandUpdatedAtKey)
+    defaults.set(source, forKey: commandSourceKey)
+  }
+
+  static func loadDesiredConnection() -> Bool? {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return nil }
+    guard defaults.object(forKey: desiredConnectionKey) != nil else { return nil }
+    return defaults.bool(forKey: desiredConnectionKey)
+  }
+
+  static func loadCommandSource() -> String? {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return nil }
+    return defaults.string(forKey: commandSourceKey)
+  }
+
+  static func loadCommandUpdatedAt() -> TimeInterval? {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return nil }
+    guard defaults.object(forKey: commandUpdatedAtKey) != nil else { return nil }
+    return defaults.double(forKey: commandUpdatedAtKey)
+  }
+
+  static func clearDesiredConnection() {
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return }
+    defaults.removeObject(forKey: desiredConnectionKey)
+    defaults.removeObject(forKey: commandUpdatedAtKey)
+    defaults.removeObject(forKey: commandSourceKey)
   }
 }
 
@@ -47,6 +82,19 @@ struct SharedTunnelConfig: Codable {
     return "group.com.example.vntapp.shared"
   }
   static let storeKey = "vnt.shared.tunnel.config"
+
+  static func sharedLogDirectoryPath() -> String? {
+    guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
+      return nil
+    }
+    let logs = container.appendingPathComponent("logs", isDirectory: true)
+    do {
+      try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
+      return logs.path
+    } catch {
+      return nil
+    }
+  }
 
   let virtualIp: String
   let virtualNetmask: String
@@ -91,7 +139,6 @@ struct SharedTunnelConfig: Codable {
       throw NSError(domain: "SharedTunnelConfig", code: -1, userInfo: [NSLocalizedDescriptionKey: "无法访问 App Group: \(Self.appGroup)"])
     }
     defaults.set(data, forKey: Self.storeKey)
-    defaults.synchronize()
   }
 
   static func loadFromAppGroup() -> SharedTunnelConfig? {

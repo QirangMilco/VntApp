@@ -1,63 +1,108 @@
 import AppIntents
 import Foundation
+import NetworkExtension
 import SwiftUI
 import WidgetKit
 
 private enum VpnControlService {
-  static func isVpnRunningForToggle() -> Bool {
-    if VPNManager.shared.isVpnRunning() {
+  static let localizedDescription = "VNT VPN"
+
+  static var extensionBundleIdentifier: String {
+    if let value = Bundle.main.object(forInfoDictionaryKey: "APP_EXTENSION_BUNDLE_ID") as? String {
+      let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !normalized.isEmpty, !normalized.contains("$(") {
+        return normalized
+      }
+    }
+    return ""
+  }
+
+  static func isRunningStatus(_ status: NEVPNStatus) -> Bool {
+    status == .connecting || status == .connected || status == .reasserting
+  }
+
+  static func loadMatchedManager() async throws -> NETunnelProviderManager? {
+    let managers = try await NETunnelProviderManager.loadAllFromPreferences()
+    NSLog("[ControlCenterExtension] load managers count=\(managers.count) targetExtension=\(extensionBundleIdentifier)")
+    for (index, manager) in managers.enumerated() {
+      let proto = manager.protocolConfiguration as? NETunnelProviderProtocol
+      NSLog("[ControlCenterExtension] manager[\(index)] enabled=\(manager.isEnabled) status=\(manager.connection.status.rawValue) provider=\(proto?.providerBundleIdentifier ?? "nil") desc=\(manager.localizedDescription ?? "nil")")
+    }
+    if !extensionBundleIdentifier.isEmpty,
+       let manager = managers.first(where: { manager in
+         let proto = manager.protocolConfiguration as? NETunnelProviderProtocol
+         return proto?.providerBundleIdentifier == extensionBundleIdentifier
+       }) {
+      return manager
+    }
+    return managers.first(where: { $0.localizedDescription == localizedDescription })
+  }
+
+  static func isVpnRunningForToggle() async -> Bool {
+    if let manager = try? await loadMatchedManager(), isRunningStatus(manager.connection.status) {
+      NSLog("[ControlCenterExtension] currentValue=true from manager status=\(manager.connection.status.rawValue)")
       return true
     }
 
     if let runtime = SharedTunnelRuntimeState.load()?.state.lowercased() {
-      if runtime == "running" || runtime == "starting" {
-        return true
-      }
+      NSLog("[ControlCenterExtension] currentValue manager not running, runtime=\(runtime)")
     }
 
+    NSLog("[ControlCenterExtension] currentValue=false")
     return false
   }
 
   static func setConnection(shouldConnect: Bool) async throws {
-    let running = isVpnRunningForToggle()
+    NSLog("[ControlCenterExtension] setConnection requested=\(shouldConnect) kind=\(vntVpnControlKind) appGroup=\(SharedTunnelConfig.appGroup) extensionBundle=\(extensionBundleIdentifier)")
+    let manager = try await loadMatchedManager()
+    let running = manager.map { isRunningStatus($0.connection.status) } ?? false
+    NSLog("[ControlCenterExtension] setConnection running=\(running) hasManager=\(manager != nil)")
     if shouldConnect == running {
+      NSLog("[ControlCenterExtension] setConnection no-op")
       return
     }
 
     if shouldConnect {
-      let config = try loadDefaultNetworkConfig()
-      let payload = try buildStartPayload(from: config)
+      SharedTunnelRuntimeState.save(state: "starting", message: "控制中心请求连接")
+      SharedControlCommand.saveDesiredConnection(true, source: "control-extension")
 
-      let fd: Int = try await withCheckedThrowingContinuation { continuation in
-        VPNManager.shared.startVpn(with: payload) { fd, error in
-          if let error {
-            continuation.resume(throwing: error)
-          } else {
-            continuation.resume(returning: fd)
-          }
-        }
+      guard let manager else {
+        NSLog("[ControlCenterExtension] start requested but prepared manager not found; fallback command saved")
+        return
       }
 
-      guard fd > 0 else {
-        throw NSError(
-          domain: "ControlCenterVPN",
-          code: -2001,
-          userInfo: [NSLocalizedDescriptionKey: "VPN 启动失败，返回 fd=\(fd)"]
-        )
-      }
+      NSLog("[ControlCenterExtension] starting prepared manager status=\(manager.connection.status.rawValue)")
+      try await manager.loadFromPreferences()
+      try manager.connection.startVPNTunnel()
+      NSLog("[ControlCenterExtension] startVPNTunnel invoked status=\(manager.connection.status.rawValue)")
     } else {
-      VPNManager.shared.stopVpn()
+      if let manager {
+        NSLog("[ControlCenterExtension] stopVPNTunnel invoked status=\(manager.connection.status.rawValue)")
+        manager.connection.stopVPNTunnel()
+      } else {
+        NSLog("[ControlCenterExtension] stop requested but manager not found")
+      }
+      SharedTunnelRuntimeState.save(state: "stopped", message: "控制中心请求断开")
+      SharedControlCommand.saveDesiredConnection(false, source: "control-extension")
     }
   }
 
   static func loadDefaultNetworkConfig() throws -> [String: Any] {
-    let defaults = UserDefaults.standard
+    NSLog("[ControlCenterExtension] loadDefaultNetworkConfig appGroup=\(SharedTunnelConfig.appGroup)")
+    guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else {
+      throw NSError(
+        domain: "ControlCenterVPN",
+        code: -1000,
+        userInfo: [NSLocalizedDescriptionKey: "无法访问 App Group: \(SharedTunnelConfig.appGroup)"]
+      )
+    }
 
     let defaultKey = ["default-key", "flutter.default-key"]
       .compactMap { defaults.string(forKey: $0) }
       .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
       .first(where: { !$0.isEmpty })
 
+    NSLog("[ControlCenterExtension] defaultKey=\(defaultKey ?? "nil")")
     guard let defaultKey, !defaultKey.isEmpty else {
       throw NSError(
         domain: "ControlCenterVPN",
@@ -84,6 +129,7 @@ private enum VpnControlService {
       }
     }
 
+    NSLog("[ControlCenterExtension] configJsonList count=\(configJsonList.count)")
     guard !configJsonList.isEmpty else {
       throw NSError(
         domain: "ControlCenterVPN",
@@ -368,12 +414,17 @@ private enum VpnControlService {
   }
 }
 
+private let vntVpnControlKind = {
+  let bundleId = Bundle.main.bundleIdentifier ?? "com.example.vntapp.control-extension"
+  return "\(bundleId).toggle"
+}()
+
 @available(iOS 18.0, *)
 struct VntVpnControlValueProvider: ControlValueProvider {
   var previewValue: Bool { false }
 
   func currentValue() async throws -> Bool {
-    VpnControlService.isVpnRunningForToggle()
+    await VpnControlService.isVpnRunningForToggle()
   }
 }
 
@@ -392,20 +443,30 @@ struct SetDefaultVpnConnectionIntent: SetValueIntent {
   }
 
   func perform() async throws -> some IntentResult {
-    try await VpnControlService.setConnection(shouldConnect: value)
-    ControlCenter.shared.reloadControls(ofKind: VntVpnControlWidget.kind)
-    return .result()
+    NSLog("[ControlCenterExtension] intent perform value=\(value)")
+    do {
+      try await VpnControlService.setConnection(shouldConnect: value)
+      ControlCenter.shared.reloadControls(ofKind: vntVpnControlKind)
+      NSLog("[ControlCenterExtension] intent completed value=\(value)")
+      return .result()
+    } catch {
+      NSLog("[ControlCenterExtension] intent failed value=\(value) error=\(error.localizedDescription)")
+      SharedTunnelRuntimeState.save(state: "error", message: error.localizedDescription)
+      ControlCenter.shared.reloadControls(ofKind: vntVpnControlKind)
+      throw error
+    }
   }
 }
 
 @available(iOS 18.0, *)
 struct VntVpnControlWidget: ControlWidget {
-  static let kind = "io.mt63.v4.control.toggle"
+  static let kind = vntVpnControlKind
 
   var body: some ControlWidgetConfiguration {
     StaticControlConfiguration(kind: Self.kind, provider: VntVpnControlValueProvider()) { isOn in
       ControlWidgetToggle("VNT", isOn: isOn, action: SetDefaultVpnConnectionIntent()) { value in
-        Text(value ? "已连接" : "未连接")
+        Label(value ? "已连接" : "未连接", systemImage: "network")
+          .controlWidgetActionHint(value ? "断开 VNT" : "连接 VNT")
       }
     }
     .displayName("VNT 连接")

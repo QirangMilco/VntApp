@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 
 use anyhow::{anyhow, Context};
@@ -45,6 +45,11 @@ pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }
 
+fn log_init_state() -> &'static Mutex<Option<String>> {
+    static STATE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+    STATE.get_or_init(|| Mutex::new(None))
+}
+
 /// 初始化日志系统，支持所有平台
 /// log_dir: 日志目录路径，例如 "logs" 或 "/data/data/app/logs"
 #[flutter_rust_bridge::frb(sync)]
@@ -57,6 +62,19 @@ pub fn init_log_with_path(log_dir: String) -> anyhow::Result<()> {
     use log4rs::config::{Appender, Config, Root};
     use log4rs::encode::pattern::PatternEncoder;
     use std::path::PathBuf;
+
+    let mut state = log_init_state()
+        .lock()
+        .map_err(|_| anyhow!("日志初始化状态锁异常"))?;
+    if let Some(inited_dir) = state.as_ref() {
+        if inited_dir != &log_dir {
+            eprintln!(
+                "日志系统已初始化，忽略新的目录请求: inited={}, requested={}",
+                inited_dir, log_dir
+            );
+        }
+        return Ok(());
+    }
 
     // 确保日志目录存在
     let log_path = PathBuf::from(&log_dir);
@@ -98,6 +116,7 @@ pub fn init_log_with_path(log_dir: String) -> anyhow::Result<()> {
     // 初始化日志系统
     log4rs::init_config(config).context("初始化日志系统失败")?;
 
+    *state = Some(log_dir.clone());
     log::info!("日志系统初始化成功，日志目录: {}", log_dir);
     Ok(())
 }

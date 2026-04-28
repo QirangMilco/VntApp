@@ -3,6 +3,7 @@
 
 APP_BUNDLE_ID = com.example.vntapp
 APP_EXTENSION_BUNDLE_ID = com.example.vntapp.tunnel-extension
+CONTROL_EXTENSION_BUNDLE_ID = com.example.vntapp.control-extension
 TEST_BUNDLE_ID = $(APP_BUNDLE_ID).RunnerTests
 APP_GROUP_ID = group.com.example.vntapp.shared
 

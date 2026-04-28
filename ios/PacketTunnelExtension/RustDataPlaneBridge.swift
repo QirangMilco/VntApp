@@ -85,6 +85,7 @@ struct RustDataPlaneCStats {
 final class RustDataPlaneBridge {
   static let shared = RustDataPlaneBridge()
 
+  private typealias InitLogFn = @convention(c) (UnsafePointer<CChar>?) -> Int32
   private typealias StartFn = @convention(c) (UnsafePointer<CChar>?) -> Int32
   private typealias StopFn = @convention(c) () -> Int32
   private typealias InputFn = @convention(c) (UnsafePointer<UInt8>?, Int, Int32) -> Int32
@@ -103,6 +104,7 @@ final class RustDataPlaneBridge {
   ) -> Int32
   private typealias SnapshotJsonFreeFn = @convention(c) (UnsafeMutablePointer<CChar>?) -> Void
 
+  private let initLogFn: InitLogFn?
   private let startFn: StartFn?
   private let stopFn: StopFn?
   private let inputIpv4Fn: InputFn?
@@ -115,6 +117,12 @@ final class RustDataPlaneBridge {
   private let snapshotJsonFreeFn: SnapshotJsonFreeFn?
 
   private init() {
+    if let ptr = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "vnt_ios_dataplane_init_log") {
+      initLogFn = unsafeBitCast(ptr, to: InitLogFn.self)
+    } else {
+      initLogFn = nil
+    }
+
     if let ptr = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "vnt_ios_dataplane_start") {
       startFn = unsafeBitCast(ptr, to: StartFn.self)
     } else {
@@ -178,6 +186,13 @@ final class RustDataPlaneBridge {
 
   var isAvailable: Bool {
     startFn != nil && stopFn != nil && inputIpv4Fn != nil && inputIpv6Fn != nil && pollOutputFn != nil && outputCountFn != nil && getStatsFn != nil
+  }
+
+  func initLog(logDir: String) -> Int32 {
+    guard let initLogFn else { return -1001 }
+    return logDir.withCString { ptr in
+      initLogFn(ptr)
+    }
   }
 
   func start(configJson: String) -> Int32 {

@@ -101,12 +101,36 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private var reapplySkipCount: UInt64 = 0
   private var pullOutputErrorCount: UInt64 = 0
   private var lastPullOutputErrorCode: Int32 = 0
+  private var rustFileLogInitCode: Int32 = -1000
+  private var rustFileLogDir: String = ""
+
+  private func initializeRustFileLogIfNeeded() {
+    if rustFileLogInitCode == 0 {
+      return
+    }
+    guard let logDir = SharedTunnelConfig.sharedLogDirectoryPath(), !logDir.isEmpty else {
+      rustFileLogInitCode = -2001
+      rustFileLogDir = ""
+      recordEvent("rust file log skipped: shared log directory unavailable")
+      return
+    }
+    rustFileLogDir = logDir
+    let code = RustDataPlaneBridge.shared.initLog(logDir: logDir)
+    rustFileLogInitCode = code
+    if code == 0 {
+      recordEvent("rust file log ready: dir=\(logDir)")
+    } else {
+      recordEvent("rust file log init failed: code=\(code), dir=\(logDir)")
+    }
+  }
 
   override func startTunnel(
     options: [String: NSObject]?,
     completionHandler: @escaping (Error?) -> Void
   ) {
     connectStartedAt = Date()
+    rustFileLogInitCode = -1000
+    rustFileLogDir = ""
     waitingForAssignedIpSince = nil
     assignedVirtualIpAt = nil
     tunnelSettingsAppliedAt = nil
@@ -128,6 +152,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       recordEvent("appGroup override from providerConfiguration: \(appGroup)")
     }
 
+    initializeRustFileLogIfNeeded()
     SharedTunnelRuntimeState.save(state: "starting")
 
     let config: SharedTunnelConfig
@@ -231,6 +256,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     lastInputErrorAt = .distantPast
     lastOutputErrorCode = 0
     lastOutputErrorAt = .distantPast
+    rustFileLogInitCode = -1000
+    rustFileLogDir = ""
     SharedTunnelRuntimeState.save(state: "stopped")
     completionHandler()
   }
@@ -898,6 +925,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         "diagnosticReapplySkipCount": diag["reapplySkipCount"] as Any,
         "diagnosticPullOutputErrorCount": diag["pullOutputErrorCount"] as Any,
         "diagnosticLastPullOutputErrorCode": diag["lastPullOutputErrorCode"] as Any,
+        "rustFileLogInitCode": rustFileLogInitCode,
+        "rustFileLogDir": rustFileLogDir,
       ]
 
       if let data = try? JSONSerialization.data(withJSONObject: payload, options: []) {

@@ -1,3 +1,4 @@
+use crate::api::vnt_api;
 use std::collections::VecDeque;
 use std::ffi::{c_char, CStr};
 use std::io;
@@ -309,6 +310,34 @@ fn build_vnt(cfg: IosVntConfig, writer: IosDeviceWriter) -> anyhow::Result<(Vnt,
         .ok_or_else(|| anyhow::anyhow!("未获取到 ipv4 sender"))?;
 
     Ok((vnt, sender))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn vnt_ios_dataplane_init_log(log_dir: *const c_char) -> i32 {
+    if log_dir.is_null() {
+        return -2;
+    }
+
+    let cstr = unsafe { CStr::from_ptr(log_dir) };
+    let path = cstr.to_string_lossy().trim().to_string();
+    if path.is_empty() {
+        return -2;
+    }
+
+    match vnt_api::init_log_with_path(path.clone()) {
+        Ok(_) => {
+            log::info!("[ios-dataplane] file log initialized: {}", path);
+            0
+        }
+        Err(e) => {
+            eprintln!("[ios-dataplane] init log failed: {}", e);
+            if let Ok(mut s) = global_state().lock() {
+                s.last_error = Some(format!("日志初始化失败: {e}"));
+                s.last_error_code = -9;
+            }
+            -9
+        }
+    }
 }
 
 #[unsafe(no_mangle)]

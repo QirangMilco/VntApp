@@ -17,7 +17,6 @@ struct SharedTunnelRuntimeState: Codable {
     let value = SharedTunnelRuntimeState(state: state, message: message, updatedAt: Date().timeIntervalSince1970)
     guard let data = try? JSONEncoder().encode(value) else { return }
     defaults.set(data, forKey: storeKey)
-    defaults.synchronize()
   }
 
   static func load() -> SharedTunnelRuntimeState? {
@@ -33,7 +32,6 @@ struct SharedTunnelRuntimeState: Codable {
   static func clear() {
     guard let defaults = UserDefaults(suiteName: SharedTunnelConfig.appGroup) else { return }
     defaults.removeObject(forKey: storeKey)
-    defaults.synchronize()
   }
 }
 
@@ -52,6 +50,19 @@ struct SharedTunnelConfig: Codable {
     return "group.com.example.vntapp.shared"
   }
   static let storeKey = "vnt.shared.tunnel.config"
+
+  static func sharedLogDirectoryPath() -> String? {
+    guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
+      return nil
+    }
+    let logs = container.appendingPathComponent("logs", isDirectory: true)
+    do {
+      try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
+      return logs.path
+    } catch {
+      return nil
+    }
+  }
 
   let virtualIp: String
   let virtualNetmask: String

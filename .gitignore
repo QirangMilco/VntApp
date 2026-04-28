@@ -52,6 +52,7 @@ app.*.map.json
 /events.jsonl
 /views.json
 /config.json
+/sources
 .craft-agents/
 .crystal-agent/
 .crystal-agent-dev/

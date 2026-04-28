@@ -14,17 +14,17 @@ final class VPNManager {
   }
 
   private var resolvedExtensionBundleIdentifier: String {
+    let explicit = extensionBundleIdentifier
+    if !explicit.isEmpty {
+      return explicit
+    }
+
     let embedded = embeddedExtensionBundleIds()
     if embedded.count == 1, let only = embedded.first {
       return only
     }
 
-    let explicit = extensionBundleIdentifier
-    if !explicit.isEmpty, embedded.contains(explicit) {
-      return explicit
-    }
-
-    return explicit
+    return ""
   }
   private let localizedDescription = "VNT VPN"
 
@@ -67,6 +67,70 @@ final class VPNManager {
     return nil
   }
 
+  func prepareVpn(with config: [String: Any], completion: @escaping (Error?) -> Void) {
+    NSLog("[iOS VPN] prepareVpn called: keys=\(Array(config.keys).sorted())")
+    do {
+      let shared = SharedTunnelConfig(dict: config)
+      try shared.saveToAppGroup()
+      NSLog("[iOS VPN] prepared shared config: appGroup=\(SharedTunnelConfig.appGroup), ip=\(shared.virtualIp), netmask=\(shared.virtualNetmask), gateway=\(shared.virtualGateway), routeCount=\(shared.externalRoute.count)")
+    } catch {
+      NSLog("[iOS VPN] prepare save shared config failed: \(error.localizedDescription)")
+      completion(error)
+      return
+    }
+
+    loadOrCreateManager { [weak self] manager, error in
+      guard let self else {
+        completion(NSError(domain: "VPNManager", code: -99, userInfo: [NSLocalizedDescriptionKey: "VPNManager 已释放"]))
+        return
+      }
+      guard let manager else {
+        completion(error ?? NSError(domain: "VPNManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "无法初始化 VPN 管理器"]))
+        return
+      }
+
+      let extBundleId = self.resolvedExtensionBundleIdentifier
+      guard !extBundleId.isEmpty else {
+        let error = NSError(domain: "VPNManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "缺少 APP_EXTENSION_BUNDLE_ID，请在 Xcode Build Settings 或 xcconfig 中配置"])
+        NSLog("[iOS VPN] prepare APP_EXTENSION_BUNDLE_ID missing")
+        completion(error)
+        return
+      }
+
+      let embedded = self.embeddedExtensionBundleIds()
+      NSLog("[iOS VPN] prepare embedded appex bundleIds=\(embedded), resolved=\(extBundleId)")
+
+      let proto = NETunnelProviderProtocol()
+      proto.providerBundleIdentifier = extBundleId
+      proto.serverAddress = (config["tunnelServerAddress"] as? String) ?? "vnt"
+      proto.providerConfiguration = [
+        "appGroup": SharedTunnelConfig.appGroup,
+        "tunnelConfig": config,
+      ]
+
+      manager.protocolConfiguration = proto
+      manager.localizedDescription = self.localizedDescription
+      manager.isEnabled = true
+
+      manager.saveToPreferences { saveError in
+        if let saveError {
+          NSLog("[iOS VPN] prepare saveToPreferences failed: \(saveError.localizedDescription)")
+          completion(saveError)
+          return
+        }
+        manager.loadFromPreferences { loadError in
+          if let loadError {
+            NSLog("[iOS VPN] prepare loadFromPreferences failed: \(loadError.localizedDescription)")
+            completion(loadError)
+            return
+          }
+          NSLog("[iOS VPN] prepare completed status=\(manager.connection.status.rawValue)")
+          completion(nil)
+        }
+      }
+    }
+  }
+
   func startVpn(with config: [String: Any], completion: @escaping (Int, Error?) -> Void) {
     NSLog("[iOS VPN] startVpn called: keys=\(Array(config.keys).sorted())")
     if let vntJson = config["vntConfigJson"] as? String {
@@ -104,11 +168,7 @@ final class VPNManager {
       }
 
       let embedded = self.embeddedExtensionBundleIds()
-      NSLog("[iOS VPN] embedded appex bundleIds=\(embedded)")
-      guard !extBundleId.isEmpty, embedded.contains(extBundleId) else {
-        completion(0, NSError(domain: "VPNManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "未解析到可用扩展标识，resolved=\(extBundleId)，embedded=\(embedded)"]))
-        return
-      }
+      NSLog("[iOS VPN] embedded appex bundleIds=\(embedded), resolved=\(extBundleId)")
 
       let proto = NETunnelProviderProtocol()
       proto.providerBundleIdentifier = extBundleId
@@ -167,8 +227,52 @@ final class VPNManager {
     }
   }
 
+  func setPreparedVpnConnection(shouldConnect: Bool, completion: @escaping (Int, Error?) -> Void) {
+    loadOrCreateManager { manager, error in
+      if let error {
+        NSLog("[iOS VPN] setPrepared load manager failed: \(error.localizedDescription)")
+        completion(0, error)
+        return
+      }
+      guard let manager else {
+        let error = NSError(domain: "VPNManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "未找到 VPN 管理器"])
+        NSLog("[iOS VPN] setPrepared manager missing")
+        completion(0, error)
+        return
+      }
+
+      if shouldConnect {
+        manager.loadFromPreferences { loadError in
+          if let loadError {
+            NSLog("[iOS VPN] setPrepared loadFromPreferences failed: \(loadError.localizedDescription)")
+            completion(0, loadError)
+            return
+          }
+          do {
+            try manager.connection.startVPNTunnel()
+            SharedTunnelRuntimeState.save(state: "starting")
+            NSLog("[iOS VPN] setPrepared startVPNTunnel invoked status=\(manager.connection.status.rawValue)")
+            completion(1, nil)
+          } catch {
+            NSLog("[iOS VPN] setPrepared startVPNTunnel failed: \(error.localizedDescription)")
+            completion(0, error)
+          }
+        }
+      } else {
+        manager.connection.stopVPNTunnel()
+        SharedTunnelRuntimeState.save(state: "stopped")
+        NSLog("[iOS VPN] setPrepared stopVPNTunnel invoked status=\(manager.connection.status.rawValue)")
+        completion(1, nil)
+      }
+    }
+  }
+
   func isVpnRunning() -> Bool {
     return currentStatus() == .connected || currentStatus() == .connecting || currentStatus() == .reasserting
+  }
+
+  func sharedLogDirectory() -> String? {
+    SharedTunnelConfig.sharedLogDirectoryPath()
   }
 
   func currentStatus() -> NEVPNStatus {
@@ -292,6 +396,8 @@ final class VPNManager {
           merged["extensionAppliedVirtualNetmask"] = obj["appliedVirtualNetmask"]
           merged["extensionAppliedVirtualGateway"] = obj["appliedVirtualGateway"]
           merged["extensionDebugEvents"] = obj["debugEvents"]
+          merged["extensionRustFileLogInitCode"] = obj["rustFileLogInitCode"]
+          merged["extensionRustFileLogDir"] = obj["rustFileLogDir"]
           merged["extensionDiagnosticStage"] = obj["diagnosticStage"]
           merged["extensionDiagnosticStageUpdatedAt"] = obj["diagnosticStageUpdatedAt"]
           merged["extensionDiagnosticConnectStartedAt"] = obj["diagnosticConnectStartedAt"]

@@ -6,6 +6,10 @@
 	<string>$(APP_EXTENSION_BUNDLE_ID)</string>
 	<key>APP_GROUP_ID</key>
 	<string>$(APP_GROUP_ID)</string>
+	<key>CONTROL_EXTENSION_BUNDLE_ID</key>
+	<string>$(CONTROL_EXTENSION_BUNDLE_ID)</string>
+	<key>CONTROL_WIDGET_KIND</key>
+	<string>$(CONTROL_EXTENSION_BUNDLE_ID).toggle</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

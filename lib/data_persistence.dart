@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'network_config.dart';
 import 'dart:convert';
@@ -6,9 +7,27 @@ import 'package:uuid/uuid.dart';
 import 'dart:io';
 
 class DataPersistence {
+  static const MethodChannel _vpnChannel = MethodChannel('vnt.app/vpn');
   static const String dataKey = 'data-key';
-  static const String dataKeyForNative = 'data-key-native'; // 供 Android 原生代码读取的 JSON 格式
+  static const String dataKeyForNative = 'data-key-native'; // 供 Android/iOS 原生代码读取的 JSON 格式
   static const String vntUniqueIdKey = 'vnt-unique-id-key';
+
+  Future<void> _syncControlCenterPreferences({
+    String? defaultKey,
+    List<String>? configJsonList,
+  }) async {
+    if (!Platform.isIOS) {
+      return;
+    }
+    try {
+      await _vpnChannel.invokeMethod('syncControlCenterPreferences', {
+        if (defaultKey != null) 'defaultKey': defaultKey,
+        if (configJsonList != null) 'configJsonList': configJsonList,
+      });
+    } catch (_) {
+      // 同步失败不应影响普通配置保存；控制中心会在下次成功同步后恢复。
+    }
+  }
 
   Future<void> saveData(List<NetworkConfig> configs) async {
     final prefs = await SharedPreferences.getInstance();
@@ -16,8 +35,9 @@ class DataPersistence {
         configs.map((config) => jsonEncode(config.toJson())).toList();
     await prefs.setStringList(dataKey, jsonDataList);
 
-    // 额外存储一个 JSON 数组字符串，供 Android 原生代码（如磁贴）读取
+    // 额外存储一个 JSON 数组字符串，供 Android/iOS 原生代码（如磁贴/控制中心）读取
     await prefs.setString(dataKeyForNative, jsonEncode(jsonDataList));
+    await _syncControlCenterPreferences(configJsonList: jsonDataList);
   }
 
   Future<List<NetworkConfig>> loadData() async {
@@ -109,7 +129,8 @@ class DataPersistence {
 
   Future<void> saveDefaultKey(String defaultKey) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('default-key', defaultKey);
+    await prefs.setString('default-key', defaultKey);
+    await _syncControlCenterPreferences(defaultKey: defaultKey);
   }
 
   Future<void> clear() async {

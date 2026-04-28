@@ -49,35 +49,45 @@ class _LogPageState extends State<LogPage> {
     });
 
     if (Platform.isIOS) {
+      final sharedDir = await VntAppCall.getIosSharedLogDirectory();
+      if (sharedDir != null) {
+        final loaded = await _initializeFileLogs(sharedDir);
+        if (loaded) {
+          return;
+        }
+      }
+
+      // iOS 文件日志不可用时，回退到诊断模式
       await _initializeIosDiagnosticLogs();
       return;
     }
 
+    final logsDir = await LogUtils.getLogDirectory();
+    await _initializeFileLogs(logsDir);
+  }
+
+  Future<bool> _initializeFileLogs(String logsDir) async {
     try {
-      // 使用统一的日志路径工具类获取日志目录
-      final logsDir = await LogUtils.getLogDirectory();
       debugPrint('日志目录: $logsDir');
 
-      // 检查 logs 目录是否存在
       final logsDirEntity = Directory(logsDir);
       if (!await logsDirEntity.exists()) {
         setState(() {
           _isLoading = false;
           _errorMessage = '日志目录不存在: $logsDir\n\n请确保应用已经运行过尝试连接一个网络后再查看日志。';
         });
-        return;
+        return false;
       }
 
-      // 查找所有日志文件（包括滚动的日志文件）
       final logFiles = <String>[];
       await for (var entity in logsDirEntity.list()) {
-        if (entity is File) {
-          final fileName = path.basename(entity.path);
-          // 匹配 vnt-core.log 和 vnt-core.1.log, vnt-core.2.log 等
-          if (fileName.startsWith('vnt-core') && fileName.endsWith('.log')) {
-            logFiles.add(entity.path);
-            debugPrint('找到日志文件: ${entity.path}');
-          }
+        if (entity is! File) {
+          continue;
+        }
+        final fileName = path.basename(entity.path);
+        if (fileName.startsWith('vnt-core') && fileName.endsWith('.log')) {
+          logFiles.add(entity.path);
+          debugPrint('找到日志文件: ${entity.path}');
         }
       }
 
@@ -86,49 +96,42 @@ class _LogPageState extends State<LogPage> {
           _isLoading = false;
           _errorMessage = '未找到日志文件\n\n日志目录: $logsDir\n\n请确保应用已经运行过并尝试连接一个网络后再查看日志。';
         });
-        return;
+        return false;
       }
 
-      debugPrint('共找到 ${logFiles.length} 个日志文件');
-
-      // 按文件名排序（vnt-core.log 应该是最新的）
       logFiles.sort((a, b) {
         final aName = path.basename(a);
         final bName = path.basename(b);
-        // vnt-core.log 排在最前面
         if (aName == 'vnt-core.log') return -1;
         if (bName == 'vnt-core.log') return 1;
         return aName.compareTo(bName);
       });
 
       setState(() {
+        _isIosDiagnosticMode = false;
         _availableLogFiles = logFiles;
         _currentLogFile = logFiles.first;
-        // 在调用 _loadMoreLogs 之前将 _isLoading 设为 false
+        _logLines.clear();
         _isLoading = false;
+        _errorMessage = null;
       });
 
       debugPrint('开始读取日志文件: $_currentLogFile');
-
-      // 创建日志读取器
       _logReader = LogReader(File(_currentLogFile!));
       await _loadMoreLogs();
 
-      debugPrint('日志加载完成，共 ${_logLines.length} 行');
-
-      // 加载完成后自动滚动到底部
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToBottom();
       });
-
-      // 启动文件监听
       _startFileWatcher();
+      return true;
     } catch (e) {
       debugPrint('初始化日志读取器失败: $e');
       setState(() {
         _isLoading = false;
         _errorMessage = '初始化日志读取器失败: $e';
       });
+      return false;
     }
   }
 
@@ -200,6 +203,7 @@ class _LogPageState extends State<LogPage> {
     lines.add('hasAssignedVirtualIp=${status['extensionDiagnosticHasAssignedVirtualIp'] ?? false} hasInputPacket=${status['extensionDiagnosticHasInputPacket'] ?? false} hasOutputPacket=${status['extensionDiagnosticHasOutputPacket'] ?? false}');
     lines.add('inputErrorCount=${status['extensionDiagnosticInputErrorCount'] ?? 0} outputErrorCount=${status['extensionDiagnosticOutputErrorCount'] ?? 0} reapplySkipCount=${status['extensionDiagnosticReapplySkipCount'] ?? 0}');
     lines.add('pullOutputErrorCount=${status['extensionDiagnosticPullOutputErrorCount'] ?? 0} lastPullOutputErrorCode=${status['extensionDiagnosticLastPullOutputErrorCode'] ?? 0}');
+    lines.add('rustFileLogInitCode=${status['extensionRustFileLogInitCode'] ?? '-'} rustFileLogDir=${status['extensionRustFileLogDir'] ?? '-'}');
     lines.add('');
     lines.add('[网络参数]');
     lines.add('virtualIp=${status['extensionVirtualIp'] ?? '-'} netmask=${status['extensionVirtualNetmask'] ?? '-'} gateway=${status['extensionVirtualGateway'] ?? '-'} network=${status['extensionVirtualNetwork'] ?? '-'}');

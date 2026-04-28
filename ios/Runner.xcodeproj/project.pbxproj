@@ -98,9 +98,9 @@
 		71F0A35DCE44F58E59A5E890 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		7F1A2B3C4D5E6F708192A3B3 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7B42BB9D6344BBEB12616F1F /* Runner.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		7F1A2B3C4D5E6F708192A3B3 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		841E3C74BEF3982B63AAC238 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8B78FA8CF35E467044C69FCF /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		906B37F2CB19A5C0CC452099 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
@@ -116,13 +116,19 @@
 		A369A8F9F12C2FBA8AEEECE4 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1C2D3E4F5061728394A5B6C /* RustDataPlaneBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RustDataPlaneBridge.swift; sourceTree = "<group>"; };
 		B7C3F3A70517573931F45281 /* Pods-PacketTunnelExtension.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketTunnelExtension.profile.xcconfig"; path = "Target Support Files/Pods-PacketTunnelExtension/Pods-PacketTunnelExtension.profile.xcconfig"; sourceTree = "<group>"; };
-		E95A95B8CAFB7EB44DCB8E50 /* Pods-PacketTunnelExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketTunnelExtension.release.xcconfig"; path = "Target Support Files/Pods-PacketTunnelExtension/Pods-PacketTunnelExtension.release.xcconfig"; sourceTree = "<group>"; };
-		F71469B529BEAE7D494C23DC /* PacketTunnelExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnelExtension.entitlements; sourceTree = "<group>"; };
-		F9E73FE79C79B88E5CB16155 /* Pods_PacketTunnelExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PacketTunnelExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC0000010000000000000021 /* ControlCenterExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ControlCenterExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC0000010000000000000022 /* ControlCenterWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterWidget.swift; sourceTree = "<group>"; };
 		CC0000010000000000000023 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CC0000010000000000000024 /* ControlCenterExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ControlCenterExtension.entitlements; sourceTree = "<group>"; };
+		CC0000010000000000000064 /* ControlCenterExtension.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = ControlCenterExtension.Debug.xcconfig; path = Flutter/ControlCenterExtension.Debug.xcconfig; sourceTree = "<group>"; };
+		CC0000010000000000000065 /* ControlCenterExtension.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = ControlCenterExtension.Release.xcconfig; path = Flutter/ControlCenterExtension.Release.xcconfig; sourceTree = "<group>"; };
+		CC0000010000000000000066 /* ControlCenterExtension.Profile.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = ControlCenterExtension.Profile.xcconfig; path = Flutter/ControlCenterExtension.Profile.xcconfig; sourceTree = "<group>"; };
+		CC0000010000000000000071 /* PacketTunnelExtension.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = PacketTunnelExtension.Debug.xcconfig; path = Flutter/PacketTunnelExtension.Debug.xcconfig; sourceTree = "<group>"; };
+		CC0000010000000000000072 /* PacketTunnelExtension.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = PacketTunnelExtension.Release.xcconfig; path = Flutter/PacketTunnelExtension.Release.xcconfig; sourceTree = "<group>"; };
+		CC0000010000000000000073 /* PacketTunnelExtension.Profile.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = PacketTunnelExtension.Profile.xcconfig; path = Flutter/PacketTunnelExtension.Profile.xcconfig; sourceTree = "<group>"; };
+		E95A95B8CAFB7EB44DCB8E50 /* Pods-PacketTunnelExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketTunnelExtension.release.xcconfig"; path = "Target Support Files/Pods-PacketTunnelExtension/Pods-PacketTunnelExtension.release.xcconfig"; sourceTree = "<group>"; };
+		F71469B529BEAE7D494C23DC /* PacketTunnelExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnelExtension.entitlements; sourceTree = "<group>"; };
+		F9E73FE79C79B88E5CB16155 /* Pods_PacketTunnelExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PacketTunnelExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,19 +148,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CC0000010000000000000041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D89FE5CA55501CDE2BC547EA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C9AE98F2A29D607956404C50 /* Foundation.framework in Frameworks */,
 				5D03428BC2C673CAFB61841D /* Pods_PacketTunnelExtension.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CC0000010000000000000041 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +213,12 @@
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
+				CC0000010000000000000064 /* ControlCenterExtension.Debug.xcconfig */,
+				CC0000010000000000000065 /* ControlCenterExtension.Release.xcconfig */,
+				CC0000010000000000000066 /* ControlCenterExtension.Profile.xcconfig */,
+				CC0000010000000000000071 /* PacketTunnelExtension.Debug.xcconfig */,
+				CC0000010000000000000072 /* PacketTunnelExtension.Release.xcconfig */,
+				CC0000010000000000000073 /* PacketTunnelExtension.Profile.xcconfig */,
 			);
 			name = Flutter;
 			sourceTree = "<group>";
@@ -255,6 +267,16 @@
 			path = Runner;
 			sourceTree = "<group>";
 		};
+		CC0000010000000000000031 /* ControlCenterExtension */ = {
+			isa = PBXGroup;
+			children = (
+				CC0000010000000000000022 /* ControlCenterWidget.swift */,
+				CC0000010000000000000023 /* Info.plist */,
+				CC0000010000000000000024 /* ControlCenterExtension.entitlements */,
+			);
+			path = ControlCenterExtension;
+			sourceTree = "<group>";
+		};
 		F0E68BC403B2C6A3DA487AA2 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -269,16 +291,6 @@
 				B7C3F3A70517573931F45281 /* Pods-PacketTunnelExtension.profile.xcconfig */,
 			);
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		CC0000010000000000000031 /* ControlCenterExtension */ = {
-			isa = PBXGroup;
-			children = (
-				CC0000010000000000000022 /* ControlCenterWidget.swift */,
-				CC0000010000000000000023 /* Info.plist */,
-				CC0000010000000000000024 /* ControlCenterExtension.entitlements */,
-			);
-			path = ControlCenterExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -426,14 +438,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CE9E2C2E88A1B1FA989D2F37 /* Resources */ = {
+		CC0000010000000000000042 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CC0000010000000000000042 /* Resources */ = {
+		CE9E2C2E88A1B1FA989D2F37 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -548,9 +560,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -580,16 +596,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F043BE4FA790628CC84F4F5E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1FAF910ED8398A04BB148B90 /* PacketTunnelProvider.swift in Sources */,
-				971997D92EDE6453BC5CB014 /* SharedTunnelConfig.swift in Sources */,
-				A1B2C3D4E5F60718293A4B5C /* RustDataPlaneBridge.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		CC0000010000000000000043 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -597,6 +603,16 @@
 				CC0000010000000000000002 /* ControlCenterWidget.swift in Sources */,
 				CC0000010000000000000003 /* VPNManager.swift in Sources */,
 				CC0000010000000000000004 /* SharedTunnelConfig.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F043BE4FA790628CC84F4F5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FAF910ED8398A04BB148B90 /* PacketTunnelProvider.swift in Sources */,
+				971997D92EDE6453BC5CB014 /* SharedTunnelConfig.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* RustDataPlaneBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -608,17 +624,17 @@
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
 		};
-		D1C7B2D329B45B70AFD03711 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = PacketTunnelExtension;
-			target = 01699B079285B1B40BB2EB60 /* PacketTunnelExtension */;
-			targetProxy = 46AB50D7D3337176CE0BBFD1 /* PBXContainerItemProxy */;
-		};
 		CC0000010000000000000012 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ControlCenterExtension;
 			target = CC0000010000000000000044 /* ControlCenterExtension */;
 			targetProxy = CC0000010000000000000011 /* PBXContainerItemProxy */;
+		};
+		D1C7B2D329B45B70AFD03711 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PacketTunnelExtension;
+			target = 01699B079285B1B40BB2EB60 /* PacketTunnelExtension */;
+			targetProxy = 46AB50D7D3337176CE0BBFD1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -644,12 +660,9 @@
 /* Begin XCBuildConfiguration section */
 		1A17454577BD3F36B56DE5CA /* Profile */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B7C3F3A70517573931F45281 /* Pods-PacketTunnelExtension.profile.xcconfig */;
+			baseConfigurationReference = CC0000010000000000000073 /* PacketTunnelExtension.Profile.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = PacketTunnelExtension/PacketTunnelExtension.entitlements;
 				CODE_SIGN_STYLE = Manual;
@@ -664,7 +677,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
@@ -732,9 +745,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
@@ -748,7 +758,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev26;
@@ -763,7 +773,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 841E3C74BEF3982B63AAC238 /* Pods-RunnerTests.debug.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -785,7 +794,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 471354FBA68C9C1FBEAD4733 /* Pods-RunnerTests.release.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -805,7 +813,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 906B37F2CB19A5C0CC452099 /* Pods-RunnerTests.profile.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -823,12 +830,9 @@
 		};
 		784BDFD32216CB90350DC1F1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0A8AEAE3C219EDF42CE3DA48 /* Pods-PacketTunnelExtension.debug.xcconfig */;
+			baseConfigurationReference = CC0000010000000000000071 /* PacketTunnelExtension.Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = PacketTunnelExtension/PacketTunnelExtension.entitlements;
 				CODE_SIGN_STYLE = Manual;
@@ -843,7 +847,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
@@ -969,9 +973,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
@@ -985,7 +986,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev26;
@@ -1001,9 +1002,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
@@ -1017,7 +1015,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev26;
@@ -1030,12 +1028,9 @@
 		};
 		BFADFE77E88442D650DC706B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E95A95B8CAFB7EB44DCB8E50 /* Pods-PacketTunnelExtension.release.xcconfig */;
+			baseConfigurationReference = CC0000010000000000000072 /* PacketTunnelExtension.Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = PacketTunnelExtension/PacketTunnelExtension.entitlements;
 				CODE_SIGN_STYLE = Manual;
@@ -1050,7 +1045,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
@@ -1064,12 +1059,12 @@
 		};
 		CC0000010000000000000051 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000010000000000000064 /* ControlCenterExtension.Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CODE_SIGN_ENTITLEMENTS = ControlCenterExtension/ControlCenterExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -1077,10 +1072,10 @@
 				INFOPLIST_FILE = ControlCenterExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.control;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CONTROL_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = control;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1090,12 +1085,12 @@
 		};
 		CC0000010000000000000052 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000010000000000000065 /* ControlCenterExtension.Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CODE_SIGN_ENTITLEMENTS = ControlCenterExtension/ControlCenterExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -1103,10 +1098,10 @@
 				INFOPLIST_FILE = ControlCenterExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.control;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CONTROL_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = control;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1117,12 +1112,12 @@
 		};
 		CC0000010000000000000053 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000010000000000000066 /* ControlCenterExtension.Profile.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				APP_BUNDLE_ID = com.example.vntapp;
-				APP_EXTENSION_BUNDLE_ID = "com.example.vntapp.tunnel-extension";
-				APP_GROUP_ID = group.com.example.vntapp.shared;
 				CODE_SIGN_ENTITLEMENTS = ControlCenterExtension/ControlCenterExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -1130,10 +1125,10 @@
 				INFOPLIST_FILE = ControlCenterExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.mt63.v4.control;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(CONTROL_EXTENSION_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = dev;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = control;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
