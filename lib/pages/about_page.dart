@@ -3,6 +3,9 @@ import 'package:vnt_app/theme/app_theme.dart';
 import 'package:vnt_app/utils/toast_utils.dart';
 import 'package:vnt_app/utils/responsive_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vnt_app/pages/legal_page.dart';
+import 'package:vnt_app/pages/privacy_policy_content.dart';
+import 'package:vnt_app/pages/user_agreement_content.dart';
 
 /// 关于页面
 class AboutPage extends StatefulWidget {
@@ -53,6 +56,10 @@ class _AboutPageState extends State<AboutPage> {
               // 联系我们卡片
               _buildContactCard(isDark),
               SizedBox(height: context.spacing(32)),
+
+              // 法律信息卡片
+              _buildLegalCard(isDark),
+              SizedBox(height: context.spacingMedium),
 
               // 许可证卡片
               _buildLicenseCard(isDark),
@@ -435,6 +442,94 @@ class _AboutPageState extends State<AboutPage> {
           ),
         ),
       ],
+    );
+  }
+
+  // 法律信息卡片
+  Widget _buildLegalCard(bool isDark) {
+    final primaryColor = Theme.of(context).primaryColor;
+    return Container(
+      width: double.infinity,
+      padding: ResponsiveUtils.padding(context, all: 20),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
+        borderRadius: BorderRadius.circular(context.cardRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.gavel_rounded,
+                color: primaryColor,
+                size: context.iconMedium,
+              ),
+              SizedBox(width: context.spacingSmall),
+              Text(
+                '法律信息',
+                style: TextStyle(
+                  fontSize: context.fontLarge,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: context.spacingMedium),
+
+          // 隐私政策
+          _buildContactItem(
+            isDark,
+            icon: Icons.privacy_tip_rounded,
+            title: '隐私政策',
+            subtitle: '了解我们如何收集和保护你的个人信息',
+            onTap: () => _showLegalPage(context, PrivacyPolicyContent.title,
+                PrivacyPolicyContent.subtitle, PrivacyPolicyContent.sections,
+                lastUpdated: PrivacyPolicyContent.lastUpdated),
+          ),
+          SizedBox(height: context.spacingSmall),
+
+          // 用户协议
+          _buildContactItem(
+            isDark,
+            icon: Icons.description_rounded,
+            title: '用户协议',
+            subtitle: '使用本应用前请阅读服务条款',
+            onTap: () => _showLegalPage(context, UserAgreementContent.title,
+                UserAgreementContent.subtitle, UserAgreementContent.sections,
+                lastUpdated: UserAgreementContent.lastUpdated),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 打开法律文档页面
+  void _showLegalPage(
+    BuildContext context,
+    String title,
+    String subtitle,
+    List<LegalSection> sections, {
+    String? lastUpdated,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LegalPage(
+          title: title,
+          subtitle: subtitle,
+          sections: sections,
+          lastUpdated: lastUpdated,
+        ),
+      ),
     );
   }
 
