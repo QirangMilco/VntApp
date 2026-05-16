@@ -283,9 +283,18 @@ class VntBox {
         } catch (_) {}
       }
 
-      debugPrint(
-        '[iOS VPN] status[$i/$maxChecks]: vpnStatus=$vpnStatus(raw=$vpnStatusRaw), runtimeState=$runtimeState, extensionState=$extensionState, msg=$extensionMessage, inPkts=$packetsFromSystem, outPkts=$packetsToSystem, lastErr=$lastErrorCode, extVip=$extensionVirtualIp, routeCount=$routeCount, rustErr=$extensionRustLastError, rustErrCode=$extensionRustLastErrorCode, appliedVip=$extensionAppliedVirtualIp, appliedMask=$extensionAppliedVirtualNetmask, appliedGw=$extensionAppliedVirtualGateway, debugEvents=$extensionDebugEvents, lastDisconnect=$lastDisconnectError, lastDisconnectDomain=$lastDisconnectErrorDomain, lastDisconnectCode=$lastDisconnectErrorCode',
-      );
+      final shouldLogStatus = i == 0 ||
+          i == maxChecks - 1 ||
+          i % 8 == 0 ||
+          runtimeState == 'error' ||
+          extensionState == 'error' ||
+          ((vpnStatus == 'connected' || vpnStatus == 'reasserting') &&
+              extensionState == 'running');
+      if (shouldLogStatus) {
+        debugPrint(
+          '[iOS VPN] status[$i/$maxChecks]: vpnStatus=$vpnStatus(raw=$vpnStatusRaw), runtimeState=$runtimeState, extensionState=$extensionState, msg=$extensionMessage, inPkts=$packetsFromSystem, outPkts=$packetsToSystem, lastErr=$lastErrorCode, extVip=$extensionVirtualIp, routeCount=$routeCount, rustErr=$extensionRustLastError, rustErrCode=$extensionRustLastErrorCode, appliedVip=$extensionAppliedVirtualIp, appliedMask=$extensionAppliedVirtualNetmask, appliedGw=$extensionAppliedVirtualGateway, debugEvents=$extensionDebugEvents, lastDisconnect=$lastDisconnectError, lastDisconnectDomain=$lastDisconnectErrorDomain, lastDisconnectCode=$lastDisconnectErrorCode',
+        );
+      }
 
       if (runtimeState == 'error' || extensionState == 'error') {
         throw Exception(

@@ -378,7 +378,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private func logInputBatch(_ packets: [Data], protocols: [NSNumber]) {
 #if DEBUG
     let now = Date()
-    guard now.timeIntervalSince(lastInputBatchLogAt) >= 1.0 else { return }
+    guard now.timeIntervalSince(lastInputBatchLogAt) >= 10.0 else { return }
     lastInputBatchLogAt = now
     let samples = packets.prefix(3).enumerated().map { index, packet in
       let proto = index < protocols.count ? protocols[index].int32Value : 0
@@ -393,7 +393,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private func logOutputBatch(_ packets: [Data], protocols: [NSNumber]) {
 #if DEBUG
     let now = Date()
-    guard now.timeIntervalSince(lastOutputBatchLogAt) >= 1.0 else { return }
+    guard now.timeIntervalSince(lastOutputBatchLogAt) >= 10.0 else { return }
     lastOutputBatchLogAt = now
     let samples = packets.prefix(3).enumerated().map { index, packet in
       let proto = index < protocols.count ? protocols[index].int32Value : 0
@@ -408,7 +408,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   private func logSnapshotDiagnostics(_ snapshot: RustDataplaneSnapshot, config: SharedTunnelConfig) {
 #if DEBUG
     let now = Date()
-    guard now.timeIntervalSince(lastSnapshotDiagLogAt) >= 1.0 else { return }
+    guard now.timeIntervalSince(lastSnapshotDiagLogAt) >= 10.0 else { return }
     lastSnapshotDiagLogAt = now
     let message = "snapshot diag: currentVip=\(snapshot.currentVirtualIp ?? "nil"), currentMask=\(snapshot.currentVirtualNetmask ?? "nil"), currentGw=\(snapshot.currentVirtualGateway ?? "nil"), appliedVip=\(appliedVirtualIp), appliedMask=\(appliedVirtualNetmask), appliedGw=\(appliedVirtualGateway), configVip=\(config.virtualIp), configMask=\(config.virtualNetmask), configGw=\(config.virtualGateway), peerVirtualIps=\(snapshot.peerVirtualIps?.count ?? 0), peers=\(snapshot.peerDevices.count), status=\(snapshot.currentStatus ?? "nil"), lastError=\(snapshot.lastError ?? "nil"), lastErrorCode=\(snapshot.lastErrorCode)"
     appendDebugEvent(message)

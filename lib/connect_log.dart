@@ -29,6 +29,8 @@ class _LogPageState extends State<LogPage> {
   String? _currentLogFile;
   bool _isIosDiagnosticMode = false;
   Timer? _iosStatusPollTimer;
+  String? _lastLogLineBase;
+  int _lastLogLineRepeatCount = 1;
 
   @override
   void initState() {
@@ -112,6 +114,7 @@ class _LogPageState extends State<LogPage> {
         _availableLogFiles = logFiles;
         _currentLogFile = logFiles.first;
         _logLines.clear();
+        _resetLogDedupState();
         _isLoading = false;
         _errorMessage = null;
       });
@@ -160,6 +163,7 @@ class _LogPageState extends State<LogPage> {
       setState(() {
         _isLoading = false;
         _isIosDiagnosticMode = true;
+        _resetLogDedupState();
         _logLines
           ..clear()
           ..add('iOS 诊断日志获取失败：未读取到 VPN 状态。');
@@ -175,9 +179,10 @@ class _LogPageState extends State<LogPage> {
       _availableLogFiles = const [];
       _currentLogFile = null;
       _logReader = null;
+      _resetLogDedupState();
       _logLines
         ..clear()
-        ..addAll(lines);
+        ..addAll(lines.map(_normalizeLogLine));
     });
   }
 
@@ -309,16 +314,12 @@ class _LogPageState extends State<LogPage> {
           final newBytes = await raf.read(currentSize - _lastFileSize);
           await raf.close();
 
-          final newContent = utf8.decode(newBytes);
+          final newContent = utf8.decode(newBytes, allowMalformed: true);
           final newLines = newContent.split('\n').where((line) => line.trim().isNotEmpty).toList();
 
           if (newLines.isNotEmpty && mounted) {
             setState(() {
-              _logLines.addAll(newLines);
-              // 限制日志行数
-              while (_logLines.length > 5000) {
-                _logLines.removeAt(0);
-              }
+              _appendLogLines(newLines);
             });
 
             // 如果用户在底部，自动滚动到新日志
@@ -340,6 +341,71 @@ class _LogPageState extends State<LogPage> {
         debugPrint('监听文件变化失败: $e');
       }
     });
+  }
+
+  void _resetLogDedupState() {
+    _lastLogLineBase = null;
+    _lastLogLineRepeatCount = 1;
+  }
+
+  String _normalizeLogLine(String line) {
+    var result = line.trimRight();
+
+    // Rust/log4rs 的 {f} 在部分构建中会输出编译机绝对路径，这里统一脱敏为项目内相对路径。
+    result = result.replaceAllMapped(
+      RegExp(r'(?:(?:/[^\s\]\)]+)+/)?((?:rust|lib|ios|android|macos|windows|linux|web|assets|test|integration_test)/[^\s\]\)]+)'),
+      (match) => match.group(1)!,
+    );
+
+    // iOS 沙盒/App Group 路径对定位问题帮助有限，且会干扰阅读；保留末尾 logs 信息即可。
+    result = result.replaceAllMapped(
+      RegExp(r'/[^\s,;\]\)]*(?:Application|Containers|Shared/AppGroup)[^\s,;\]\)]*/(logs/[^\s,;\]\)]*)'),
+      (match) => '<app-container>/${match.group(1)!}',
+    );
+
+    return result;
+  }
+
+  String _dedupKey(String line) {
+    // 去掉常见时间戳和轮询序号，让内容相同的连续状态日志能被压缩。
+    return line
+        .replaceFirst(RegExp(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s*'), '')
+        .replaceFirst(RegExp(r'^\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\s*'), '')
+        .replaceFirst(RegExp(r'status\[\d+/(\d+)\]'), r'status[*/$1]')
+        .trim();
+  }
+
+  void _appendLogLines(Iterable<String> lines) {
+    for (final rawLine in lines) {
+      final line = _normalizeLogLine(rawLine);
+      if (line.trim().isEmpty) {
+        continue;
+      }
+      final key = _dedupKey(line);
+      if (_lastLogLineBase == key && _logLines.isNotEmpty) {
+        _lastLogLineRepeatCount += 1;
+        final suffix = '  (重复 x$_lastLogLineRepeatCount)';
+        final last = _logLines.last.replaceFirst(RegExp(r'  \(重复 x\d+\)$'), '');
+        _logLines[_logLines.length - 1] = '$last$suffix';
+      } else {
+        _lastLogLineBase = key;
+        _lastLogLineRepeatCount = 1;
+        _logLines.add(line);
+      }
+    }
+
+    // 限制日志行数，避免用户设备上日志页占用过多内存。
+    while (_logLines.length > 5000) {
+      _logLines.removeAt(0);
+    }
+  }
+
+  String _sanitizeLogsText(String content) {
+    return content
+        .split('\n')
+        .map(_normalizeLogLine)
+        .where((line) => line.trim().isNotEmpty)
+        .join('\n');
   }
 
   // 滚动到底部的辅助方法
@@ -367,7 +433,7 @@ class _LogPageState extends State<LogPage> {
     try {
       final newLines = await _logReader!.readNextBatch();
       setState(() {
-        _logLines.addAll(newLines);
+        _appendLogLines(newLines);
         _isLoading = false;
       });
     } catch (e) {
@@ -391,6 +457,7 @@ class _LogPageState extends State<LogPage> {
     setState(() {
       _currentLogFile = logFilePath;
       _logLines.clear();
+      _resetLogDedupState();
       _isLoading = true;
       _errorMessage = null;
     });
@@ -916,6 +983,7 @@ class _LogPageState extends State<LogPage> {
       if (_isIosDiagnosticMode) {
         setState(() {
           _logLines.clear();
+          _resetLogDedupState();
         });
         if (mounted) {
           showTopToast(context, '已清空当前诊断视图，下次刷新会重新获取状态', isSuccess: true);
@@ -946,6 +1014,7 @@ class _LogPageState extends State<LogPage> {
 
       setState(() {
         _logLines.clear();
+        _resetLogDedupState();
         // 不清空 _availableLogFiles，因为文件还存在
         // 重置 LogReader 以便重新读取
         _logReader = null;
@@ -984,7 +1053,7 @@ class _LogPageState extends State<LogPage> {
       if (await file.exists()) {
         final content = await file.readAsString();
         allLogs += '=== ${path.basename(logFile)} ===\n';
-        allLogs += content;
+        allLogs += _sanitizeLogsText(content);
         allLogs += '\n\n';
       }
     }
@@ -1015,7 +1084,7 @@ class LogReader {
 
     try {
       // 直接读取整个文件，避免偏移量计算错误导致的重复问题
-      final content = await logFile.readAsString();
+      final content = await logFile.readAsString(encoding: utf8);
       final allLines = content.split('\n');
 
       // 返回所有非空行

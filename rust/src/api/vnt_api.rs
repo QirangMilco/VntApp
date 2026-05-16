@@ -98,8 +98,9 @@ pub fn init_log_with_path(log_dir: String) -> anyhow::Result<()> {
     // 组合策略
     let policy = CompoundPolicy::new(Box::new(trigger), Box::new(roller));
 
-    // 日志编码格式
-    let encoder = PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S%.3f)} [{f}:{L}] {h({l})} {M}:{m}{n}{n}");
+    // 日志编码格式：使用模块路径代替源码文件路径，避免在日志中泄露开发机绝对路径。
+    // 同时避免每条日志后额外空行，减少应用内日志重复/空白噪音。
+    let encoder = PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S%.3f)} [{M}:{L}] {h({l})} {m}{n}");
 
     // 滚动文件追加器
     let appender = RollingFileAppender::builder()
